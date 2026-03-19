@@ -1,0 +1,2615 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#7C3AED">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<title>UniHazirlik - TYT AYT Hazirlik</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ==========================================
+   RESET & BASE
+   ========================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea { font-family: inherit; }
+a { text-decoration: none; color: inherit; }
+ul { list-style: none; }
+
+/* ==========================================
+   CSS VARIABLES
+   ========================================== */
+:root {
+  --primary: #7C3AED;
+  --primary-dark: #5B21B6;
+  --primary-light: #EDE9FE;
+  --primary-lighter: #F5F3FF;
+  --accent: #F59E0B;
+  --accent-light: #FEF3C7;
+  --bg: #FAF5FF;
+  --bg-card: #FFFFFF;
+  --text: #1E293B;
+  --text-secondary: #64748B;
+  --text-light: #94A3B8;
+  --success: #10B981;
+  --success-light: #D1FAE5;
+  --danger: #EF4444;
+  --danger-light: #FEE2E2;
+  --warning: #F59E0B;
+  --warning-light: #FEF3C7;
+  --border: #E2E8F0;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 16px rgba(124,58,237,0.1);
+  --shadow-lg: 0 8px 32px rgba(124,58,237,0.15);
+  --shadow-glow: 0 4px 24px rgba(124,58,237,0.25);
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 50%;
+  --tab-bar-height: 64px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ==========================================
+   APP CONTAINER
+   ========================================== */
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  position: relative;
+  background: var(--bg);
+}
+
+/* ==========================================
+   PAGE SYSTEM
+   ========================================== */
+.page {
+  display: none;
+  padding: 20px 16px;
+  padding-bottom: calc(var(--tab-bar-height) + var(--safe-bottom) + 20px);
+  min-height: 100dvh;
+  animation: fadeIn 0.3s var(--ease);
+}
+.page.active { display: block; }
+.page.sub-page { animation: slideInRight 0.35s var(--ease); }
+.page.slide-out { animation: slideOutRight 0.3s var(--ease) forwards; }
+
+/* ==========================================
+   BOTTOM TAB BAR
+   ========================================== */
+.bottom-tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  height: var(--tab-bar-height);
+  padding-bottom: var(--safe-bottom);
+  background: var(--bg-card);
+  border-top: 1px solid rgba(124,58,237,0.08);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+}
+.bottom-tab-bar.hidden { display: none; }
+.tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 0;
+  color: var(--text-light);
+  font-size: 0.6rem;
+  font-weight: 500;
+  transition: color 0.2s;
+  letter-spacing: 0.02em;
+}
+.tab-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; transition: all 0.2s; }
+.tab-item.active { color: var(--primary); }
+.tab-item.active svg { stroke-width: 2.2; }
+
+/* ==========================================
+   BUTTONS
+   ========================================== */
+.btn-primary {
+  width: 100%;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.3s var(--ease);
+  box-shadow: var(--shadow-glow);
+  border: none;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(124,58,237,0.35); }
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.btn-secondary {
+  width: 100%;
+  padding: 14px 24px;
+  background: var(--primary-light);
+  color: var(--primary);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.3s var(--ease);
+  border: none;
+}
+.btn-secondary:hover { background: #DDD6FE; }
+
+.btn-danger {
+  width: 100%;
+  padding: 14px 24px;
+  background: var(--danger-light);
+  color: var(--danger);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.3s var(--ease);
+  border: none;
+}
+
+.btn-outline {
+  width: 100%;
+  padding: 14px 24px;
+  background: transparent;
+  color: var(--primary);
+  border: 2px solid var(--primary-light);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.3s var(--ease);
+}
+.btn-outline:hover { background: var(--primary-lighter); }
+
+.btn-sm { padding: 8px 16px; font-size: 0.8rem; }
+.btn-icon { width: auto; padding: 10px; border-radius: var(--radius-full); }
+
+/* ==========================================
+   FORM INPUTS
+   ========================================== */
+.input-field {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  color: var(--text);
+  transition: border-color 0.2s;
+  outline: none;
+}
+.input-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+.input-field::placeholder { color: var(--text-light); }
+.input-field.error { border-color: var(--danger); }
+.input-group { display: flex; flex-direction: column; gap: 8px; }
+.input-label { font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); }
+
+textarea.input-field { resize: vertical; min-height: 120px; }
+
+/* ==========================================
+   CARDS
+   ========================================== */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s var(--ease);
+}
+.card:hover { box-shadow: var(--shadow-md); }
+
+/* ==========================================
+   AUTH PAGE
+   ========================================== */
+.auth-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  padding-bottom: 40px;
+  min-height: 100dvh;
+  background: linear-gradient(180deg, var(--primary-lighter) 0%, var(--bg) 50%);
+}
+.auth-logo {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-glow);
+  animation: logoIn 0.6s var(--ease-bounce);
+}
+.auth-logo svg { width: 40px; height: 40px; fill: white; }
+.auth-title { font-size: 1.6rem; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+.auth-subtitle { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 32px; }
+.auth-form { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 14px; }
+.auth-form.hidden { display: none; }
+.auth-switch { font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-top: 16px; }
+.auth-switch a { color: var(--primary); font-weight: 600; cursor: pointer; }
+.auth-forgot { font-size: 0.8rem; color: var(--primary); text-align: right; cursor: pointer; font-weight: 500; }
+.auth-verify { text-align: center; padding: 20px; }
+.auth-verify-icon { font-size: 3rem; margin-bottom: 12px; }
+.auth-verify-text { color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6; }
+.auth-error { color: var(--danger); font-size: 0.8rem; text-align: center; padding: 8px; background: var(--danger-light); border-radius: 8px; }
+
+/* ==========================================
+   DASHBOARD
+   ========================================== */
+.dash-header { margin-bottom: 20px; }
+.dash-greeting { font-size: 1.4rem; font-weight: 700; color: var(--text); }
+.dash-date { font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px; }
+
+.motivation-card {
+  background: linear-gradient(135deg, var(--primary), #9333EA);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  color: white;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.motivation-card::after {
+  content: '';
+  position: absolute;
+  top: -20px; right: -20px;
+  width: 100px; height: 100px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+}
+.motivation-text { font-size: 0.9rem; font-weight: 500; line-height: 1.5; position: relative; z-index: 1; }
+.motivation-day { font-size: 0.75rem; opacity: 0.8; margin-top: 8px; position: relative; z-index: 1; }
+
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+.stat-icon { font-size: 1.5rem; margin-bottom: 6px; }
+.stat-value { font-size: 1.6rem; font-weight: 700; color: var(--primary); }
+.stat-label { font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px; }
+
+.quick-actions-title { font-size: 1rem; font-weight: 600; margin-bottom: 12px; }
+.quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.action-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 20px 16px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s var(--ease);
+  cursor: pointer;
+}
+.action-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.action-card:active { transform: translateY(0); }
+.action-icon {
+  width: 48px; height: 48px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+.action-card:nth-child(1) .action-icon { background: #EDE9FE; }
+.action-card:nth-child(2) .action-icon { background: #DBEAFE; }
+.action-card:nth-child(3) .action-icon { background: #FEF3C7; }
+.action-card:nth-child(4) .action-icon { background: #D1FAE5; }
+.action-title { font-size: 0.8rem; font-weight: 600; color: var(--text); text-align: center; }
+.action-desc { font-size: 0.7rem; color: var(--text-secondary); text-align: center; }
+
+/* ==========================================
+   PAGE HEADER & SUB-PAGE HEADER
+   ========================================== */
+.page-header { margin-bottom: 20px; padding-top: 8px; }
+.page-header h1 { font-size: 1.4rem; font-weight: 700; }
+.page-header p { font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px; }
+
+.sub-page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-top: 8px;
+}
+.back-btn {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+.back-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+.sub-page-header h2 { font-size: 1.1rem; font-weight: 600; flex: 1; }
+.sub-page-header .badge {
+  padding: 4px 10px;
+  background: var(--primary-light);
+  color: var(--primary);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* ==========================================
+   EXAM TYPE SELECTOR
+   ========================================== */
+.exam-type-selector {
+  display: flex;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 4px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.exam-type-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all 0.3s var(--ease);
+  text-align: center;
+}
+.exam-type-btn.active {
+  background: var(--primary);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+/* ==========================================
+   SUBJECT LIST
+   ========================================== */
+.subject-list { display: flex; flex-direction: column; gap: 10px; }
+.subject-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: all 0.3s var(--ease);
+}
+.subject-card:hover { transform: translateX(4px); box-shadow: var(--shadow-md); }
+.subject-icon {
+  width: 44px; height: 44px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+.subject-info { flex: 1; }
+.subject-name { font-size: 0.95rem; font-weight: 600; }
+.subject-count { font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px; }
+.subject-chevron { color: var(--text-light); }
+.subject-chevron svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+/* ==========================================
+   TOPIC LIST
+   ========================================== */
+.topic-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+.topic-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.3s var(--ease);
+  border-left: 3px solid transparent;
+}
+.topic-card:hover { border-left-color: var(--primary); transform: translateX(2px); }
+.topic-card.active { border-left-color: var(--primary); background: var(--primary-lighter); }
+.topic-name { font-size: 0.88rem; font-weight: 500; }
+.topic-action {
+  padding: 6px 14px;
+  background: var(--primary);
+  color: white;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ==========================================
+   KONU CONTENT
+   ========================================== */
+.konu-content {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  margin-top: 16px;
+}
+.konu-placeholder {
+  text-align: center;
+  color: var(--text-light);
+  padding: 40px 20px;
+  font-size: 0.9rem;
+}
+.konu-placeholder-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.konu-text {
+  font-size: 0.9rem;
+  line-height: 1.8;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+.konu-text strong, .konu-text b { color: var(--primary-dark); font-weight: 600; }
+.konu-actions { margin-top: 16px; display: flex; gap: 10px; }
+
+/* ==========================================
+   QUIZ
+   ========================================== */
+.quiz-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--primary-light);
+  border-radius: 3px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.quiz-progress-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 3px;
+  transition: width 0.4s var(--ease);
+}
+.quiz-question-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 16px;
+}
+.quiz-question-num { font-size: 0.75rem; font-weight: 600; color: var(--primary); margin-bottom: 8px; }
+.quiz-question-text { font-size: 1rem; font-weight: 500; line-height: 1.6; }
+.quiz-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.quiz-option {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  font-size: 0.9rem;
+  text-align: left;
+  transition: all 0.2s var(--ease);
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.quiz-option:hover:not(.disabled) { border-color: var(--primary); background: var(--primary-lighter); }
+.quiz-option.selected { border-color: var(--primary); background: var(--primary-light); }
+.quiz-option.correct { border-color: var(--success); background: var(--success-light); color: #065F46; }
+.quiz-option.wrong { border-color: var(--danger); background: var(--danger-light); color: #991B1B; }
+.quiz-option.disabled { cursor: default; opacity: 0.7; }
+.quiz-option-letter {
+  width: 28px; height: 28px;
+  border-radius: var(--radius-full);
+  background: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+.quiz-option.correct .quiz-option-letter { background: var(--success); color: white; }
+.quiz-option.wrong .quiz-option-letter { background: var(--danger); color: white; }
+.quiz-feedback {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+.quiz-feedback.correct { background: var(--success-light); color: #065F46; }
+.quiz-feedback.wrong { background: var(--danger-light); color: #991B1B; }
+
+/* Quiz Results */
+.quiz-result-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: 32px 24px;
+  box-shadow: var(--shadow-md);
+  text-align: center;
+  margin-bottom: 20px;
+}
+.result-score-circle {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: conic-gradient(var(--primary) var(--score-pct), var(--primary-light) var(--score-pct));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+.result-score-inner {
+  width: 96px; height: 96px;
+  background: var(--bg-card);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.result-score-num { font-size: 1.6rem; font-weight: 800; color: var(--primary); }
+.result-score-label { font-size: 0.7rem; color: var(--text-secondary); }
+.result-stats { display: flex; justify-content: center; gap: 24px; margin-top: 16px; }
+.result-stat { text-align: center; }
+.result-stat-num { font-size: 1.2rem; font-weight: 700; }
+.result-stat-num.correct { color: var(--success); }
+.result-stat-num.wrong { color: var(--danger); }
+.result-stat-label { font-size: 0.72rem; color: var(--text-secondary); }
+.result-actions { display: flex; flex-direction: column; gap: 10px; }
+
+/* ==========================================
+   AI SOR
+   ========================================== */
+.ai-remaining {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-align: center;
+  margin-bottom: 16px;
+}
+.ai-tabs {
+  display: flex;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 4px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.ai-tab {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all 0.3s var(--ease);
+  text-align: center;
+}
+.ai-tab.active { background: var(--primary); color: white; }
+
+.ai-text-input { margin-bottom: 16px; }
+.ai-photo-input { margin-bottom: 16px; }
+.ai-photo-input.hidden { display: none; }
+.ai-text-input.hidden { display: none; }
+
+.photo-upload-area {
+  border: 2px dashed var(--primary-light);
+  border-radius: var(--radius-lg);
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: var(--primary-lighter);
+}
+.photo-upload-area:hover { border-color: var(--primary); background: var(--primary-light); }
+.photo-upload-icon { font-size: 2.5rem; margin-bottom: 8px; }
+.photo-upload-text { font-size: 0.85rem; color: var(--text-secondary); }
+.photo-preview { width: 100%; max-height: 200px; object-fit: contain; border-radius: var(--radius); margin-top: 12px; }
+
+.ai-solution-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 16px;
+}
+.ai-step { margin-bottom: 16px; }
+.ai-step:last-child { margin-bottom: 0; }
+.ai-step-title { font-size: 0.82rem; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+.ai-step-content { font-size: 0.88rem; line-height: 1.7; color: var(--text); }
+.ai-final-answer {
+  background: var(--success-light);
+  border-radius: var(--radius);
+  padding: 14px;
+  font-weight: 600;
+  color: #065F46;
+  font-size: 0.9rem;
+  margin-top: 12px;
+}
+.ai-note { font-size: 0.78rem; color: var(--text-light); margin-top: 8px; font-style: italic; }
+
+.ai-history { margin-top: 20px; }
+.ai-history-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 10px; }
+.ai-history-item {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+.ai-history-q { font-size: 0.82rem; font-weight: 500; color: var(--text); margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ai-history-time { font-size: 0.7rem; color: var(--text-light); }
+
+/* ==========================================
+   PROFILE
+   ========================================== */
+.profile-avatar {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0 auto 12px;
+}
+.profile-name { text-align: center; font-size: 1.1rem; font-weight: 600; }
+.profile-email { text-align: center; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 20px; }
+
+.profile-section { margin-bottom: 20px; }
+.profile-section-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 10px; color: var(--text); }
+.history-list { display: flex; flex-direction: column; gap: 8px; }
+.history-item {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.history-info { flex: 1; }
+.history-desc { font-size: 0.82rem; font-weight: 500; }
+.history-date { font-size: 0.7rem; color: var(--text-light); margin-top: 2px; }
+.history-amount { font-size: 0.85rem; font-weight: 700; }
+.history-amount.negative { color: var(--danger); }
+.history-amount.positive { color: var(--success); }
+.history-empty { text-align: center; color: var(--text-light); padding: 20px; font-size: 0.85rem; }
+
+.profile-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+
+/* ==========================================
+   CREDIT PACKAGES
+   ========================================== */
+.credit-packages { display: flex; flex-direction: column; gap: 12px; }
+.credit-package {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  border: 2px solid transparent;
+  transition: all 0.3s var(--ease);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.credit-package.popular { border-color: var(--primary); }
+.credit-package.popular::before {
+  content: 'Populer';
+  position: absolute;
+  top: 12px; right: -28px;
+  background: var(--primary);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 4px 32px;
+  transform: rotate(45deg);
+}
+.credit-package:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.pkg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.pkg-name { font-size: 1rem; font-weight: 700; }
+.pkg-credits { font-size: 0.82rem; color: var(--primary); font-weight: 600; }
+.pkg-price { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
+.pkg-price span { font-size: 0.85rem; font-weight: 400; color: var(--text-secondary); }
+.pkg-buy-btn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 10px;
+  background: var(--primary);
+  color: white;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+/* ==========================================
+   MODALS
+   ========================================== */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.2s var(--ease);
+}
+.modal-overlay.active { display: flex; }
+.modal-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: 28px 24px;
+  max-width: 360px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  animation: fadeUp 0.3s var(--ease-bounce);
+  text-align: center;
+}
+.modal-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+.modal-message { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 20px; }
+.modal-actions { display: flex; gap: 10px; }
+.modal-actions .btn-primary, .modal-actions .btn-secondary { flex: 1; }
+
+/* ==========================================
+   TOAST
+   ========================================== */
+.toast {
+  position: fixed;
+  bottom: calc(var(--tab-bar-height) + var(--safe-bottom) + 16px);
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  max-width: 360px;
+  width: calc(100% - 32px);
+  padding: 14px 20px;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  font-weight: 500;
+  z-index: 300;
+  opacity: 0;
+  transition: all 0.3s var(--ease);
+  text-align: center;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.toast.info { background: var(--primary); color: white; }
+.toast.success { background: var(--success); color: white; }
+.toast.error { background: var(--danger); color: white; }
+
+/* ==========================================
+   LOADING OVERLAY
+   ========================================== */
+.loading-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(250,245,255,0.9);
+  backdrop-filter: blur(8px);
+  z-index: 250;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.loading-overlay.active { display: flex; }
+.loading-spinner {
+  width: 44px; height: 44px;
+  border: 4px solid var(--primary-light);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.loading-text { font-size: 0.9rem; color: var(--text-secondary); font-weight: 500; }
+
+/* ==========================================
+   ANIMATIONS
+   ========================================== */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideInRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes slideOutRight { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(40px); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes logoIn { from { opacity: 0; transform: scale(0.5) rotate(-10deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
+@keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+
+/* ==========================================
+   UTILITIES
+   ========================================== */
+.hidden { display: none !important; }
+.text-center { text-align: center; }
+.mt-8 { margin-top: 8px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mt-20 { margin-top: 20px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-12 { margin-bottom: 12px; }
+.mb-16 { margin-bottom: 16px; }
+.gap-10 { gap: 10px; }
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+@media (min-width: 768px) {
+  .app { border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ==========================================
+       AUTH PAGE
+       ========================================== -->
+  <section class="page auth-page active" id="pageAuth">
+    <div class="auth-logo">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <h1 class="auth-title">UniHazirlik</h1>
+    <p class="auth-subtitle">TYT & AYT Sinav Hazirlik</p>
+
+    <div id="authError" class="auth-error hidden"></div>
+
+    <!-- Login Form -->
+    <form class="auth-form" id="authLoginForm" onsubmit="return false">
+      <div class="input-group">
+        <input type="email" class="input-field" id="loginEmail" placeholder="E-posta adresi" required>
+      </div>
+      <div class="input-group">
+        <input type="password" class="input-field" id="loginPassword" placeholder="Sifre" required>
+      </div>
+      <div class="auth-forgot" onclick="showAuthForm('forgot')">Sifremi Unuttum</div>
+      <button type="submit" class="btn-primary" id="loginBtn" onclick="handleLogin()">Giris Yap</button>
+      <div class="auth-switch">Hesabin yok mu? <a onclick="showAuthForm('register')">Kayit Ol</a></div>
+    </form>
+
+    <!-- Register Form -->
+    <form class="auth-form hidden" id="authRegisterForm" onsubmit="return false">
+      <div class="input-group">
+        <input type="text" class="input-field" id="registerName" placeholder="Ad Soyad" required>
+      </div>
+      <div class="input-group">
+        <input type="email" class="input-field" id="registerEmail" placeholder="E-posta adresi" required>
+      </div>
+      <div class="input-group">
+        <input type="password" class="input-field" id="registerPassword" placeholder="Sifre (en az 6 karakter)" required minlength="6">
+      </div>
+      <button type="submit" class="btn-primary" id="registerBtn" onclick="handleRegister()">Kayit Ol</button>
+      <div class="auth-switch">Zaten hesabin var mi? <a onclick="showAuthForm('login')">Giris Yap</a></div>
+    </form>
+
+    <!-- Forgot Password Form -->
+    <form class="auth-form hidden" id="authForgotForm" onsubmit="return false">
+      <p style="font-size:0.85rem;color:var(--text-secondary);text-align:center;margin-bottom:8px;">Sifre sifirlama baglantisi gonderilecek.</p>
+      <div class="input-group">
+        <input type="email" class="input-field" id="forgotEmail" placeholder="E-posta adresi" required>
+      </div>
+      <button type="submit" class="btn-primary" onclick="handleForgotPassword()">Sifirlama Linki Gonder</button>
+      <div class="auth-switch"><a onclick="showAuthForm('login')">Giris ekranina don</a></div>
+    </form>
+
+    <!-- Verify Email -->
+    <div class="auth-form hidden" id="authVerifyMessage">
+      <div class="auth-verify">
+        <div class="auth-verify-icon">📧</div>
+        <h3 style="margin-bottom:8px;">E-posta Dogrulama</h3>
+        <p class="auth-verify-text">Kayit basarili! Lutfen e-posta adresinizi kontrol edin ve dogrulama linkine tiklayin.</p>
+        <button class="btn-secondary mt-16" onclick="showAuthForm('login')">Giris Ekranina Don</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       DASHBOARD
+       ========================================== -->
+  <section class="page" id="pageDashboard">
+    <div class="dash-header">
+      <h1 class="dash-greeting" id="dashGreeting">Merhaba!</h1>
+      <p class="dash-date" id="dashDate"></p>
+    </div>
+
+    <div class="motivation-card" id="dashMotivation">
+      <p class="motivation-text" id="motivationText"></p>
+      <p class="motivation-day" id="motivationDay"></p>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-value" id="dashCredits">0</div>
+        <div class="stat-label">Kredi</div>
+      </div>
+      <div class="stat-card" style="cursor:pointer" onclick="animateStreak()">
+        <div class="stat-icon">🔥</div>
+        <div class="stat-value" id="dashStreak">0</div>
+        <div class="stat-label">Gun Serisi</div>
+      </div>
+    </div>
+
+    <h3 class="quick-actions-title">Hizli Erisim</h3>
+    <div class="quick-actions">
+      <div class="action-card" onclick="switchTab('pageKonular')">
+        <div class="action-icon">📚</div>
+        <div class="action-title">Konu Anlatimi</div>
+        <div class="action-desc">AI ile ogren</div>
+      </div>
+      <div class="action-card" onclick="switchTab('pageSorular')">
+        <div class="action-icon">✍️</div>
+        <div class="action-title">Soru Bankasi</div>
+        <div class="action-desc">Test coz</div>
+      </div>
+      <div class="action-card" onclick="switchTab('pageAiSor')">
+        <div class="action-icon">🤖</div>
+        <div class="action-title">AI'a Sor</div>
+        <div class="action-desc">Soru cozdir</div>
+      </div>
+      <div class="action-card" onclick="navigateTo('pageKrediSatinAl',{isSubPage:true})">
+        <div class="action-icon">💎</div>
+        <div class="action-title">Kredi Satin Al</div>
+        <div class="action-desc">Paketler</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       KONULAR PAGE
+       ========================================== -->
+  <section class="page" id="pageKonular">
+    <div class="page-header">
+      <h1>Konu Anlatimi</h1>
+      <p>Ders ve konu secin, AI ile ogrenin</p>
+    </div>
+    <div class="exam-type-selector" id="konularExamType">
+      <button class="exam-type-btn active" onclick="setExamType('konular','tyt')">TYT</button>
+      <button class="exam-type-btn" onclick="setExamType('konular','ayt')">AYT</button>
+    </div>
+    <div class="subject-list" id="konularSubjectList"></div>
+  </section>
+
+  <!-- ==========================================
+       KONU ANLATIM SUB-PAGE
+       ========================================== -->
+  <section class="page sub-page" id="pageKonuAnlatim">
+    <div class="sub-page-header">
+      <button class="back-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <h2 id="konuAnlatimTitle">Ders Adi</h2>
+    </div>
+    <div class="topic-list" id="konuTopicList"></div>
+    <div class="konu-content" id="konuContentArea">
+      <div class="konu-placeholder" id="konuPlaceholder">
+        <div class="konu-placeholder-icon">📖</div>
+        <p>Yukaridaki konulardan birini secin ve "Anlat" butonuna basin.</p>
+      </div>
+      <div class="konu-text hidden" id="konuText"></div>
+      <div class="konu-actions hidden" id="konuActions">
+        <button class="btn-secondary" onclick="handleDetayliAnlat()">Daha Detayli Anlat (+1 Kredi)</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       SORULAR PAGE
+       ========================================== -->
+  <section class="page" id="pageSorular">
+    <div class="page-header">
+      <h1>Soru Bankasi</h1>
+      <p>Ders secin ve test cozun</p>
+    </div>
+    <div class="exam-type-selector" id="sorularExamType">
+      <button class="exam-type-btn active" onclick="setExamType('sorular','tyt')">TYT</button>
+      <button class="exam-type-btn" onclick="setExamType('sorular','ayt')">AYT</button>
+    </div>
+    <div class="subject-list" id="sorularSubjectList"></div>
+  </section>
+
+  <!-- ==========================================
+       QUIZ SUB-PAGE
+       ========================================== -->
+  <section class="page sub-page" id="pageQuiz">
+    <div class="sub-page-header">
+      <button class="back-btn" onclick="confirmQuizExit()">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <h2 id="quizTitle">Sinav</h2>
+      <span class="badge" id="quizProgress">1/10</span>
+    </div>
+    <div class="quiz-progress-bar">
+      <div class="quiz-progress-fill" id="quizProgressFill" style="width:10%"></div>
+    </div>
+    <div class="quiz-question-card">
+      <div class="quiz-question-num" id="quizQuestionNum">Soru 1</div>
+      <div class="quiz-question-text" id="quizQuestionText"></div>
+    </div>
+    <div class="quiz-options" id="quizOptions"></div>
+    <div class="quiz-feedback hidden" id="quizFeedback"></div>
+    <button class="btn-primary hidden" id="quizNextBtn" onclick="nextQuestion()">Sonraki Soru</button>
+  </section>
+
+  <!-- ==========================================
+       QUIZ RESULT SUB-PAGE
+       ========================================== -->
+  <section class="page sub-page" id="pageQuizResult">
+    <div class="sub-page-header">
+      <button class="back-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <h2>Sonuclar</h2>
+    </div>
+    <div class="quiz-result-card" id="quizResultCard"></div>
+    <div class="result-actions">
+      <button class="btn-primary" onclick="retryQuiz()">Tekrar Dene</button>
+      <button class="btn-secondary" onclick="switchTab('pageDashboard')">Ana Sayfa</button>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       AI SOR PAGE
+       ========================================== -->
+  <section class="page" id="pageAiSor">
+    <div class="page-header">
+      <h1>AI'a Sor</h1>
+      <p>Sorunuzu yazin veya fotograf yukleyin</p>
+    </div>
+    <div class="ai-remaining" id="aiRemaining">Kalan: 5/5 soru hakkı (1 kredi)</div>
+    <div class="ai-tabs">
+      <button class="ai-tab active" id="aiTabText" onclick="switchAiTab('text')">Soru Yaz</button>
+      <button class="ai-tab" id="aiTabPhoto" onclick="switchAiTab('photo')">Fotograf Yukle</button>
+    </div>
+    <div class="ai-text-input" id="aiTextInput">
+      <textarea class="input-field" id="aiQuestionText" placeholder="Sorunuzu buraya yazin... Ornegin: 'x^2 + 5x + 6 = 0 denkleminin koklerini bulunuz.'"></textarea>
+    </div>
+    <div class="ai-photo-input hidden" id="aiPhotoInput">
+      <div class="photo-upload-area" id="aiPhotoUploadArea" onclick="document.getElementById('aiPhotoFile').click()">
+        <div class="photo-upload-icon">📷</div>
+        <p class="photo-upload-text">Fotograf yuklemek icin tiklayin</p>
+      </div>
+      <img id="aiPhotoPreview" class="photo-preview hidden">
+      <input type="file" id="aiPhotoFile" accept="image/*" class="hidden" onchange="handlePhotoUpload(this)">
+    </div>
+    <button class="btn-primary" id="aiSubmitBtn" onclick="handleAiSubmit()">Coz</button>
+    <div class="ai-history" id="aiHistoryArea">
+      <h3 class="ai-history-title hidden" id="aiHistoryTitle">Gecmis Sorular</h3>
+      <div id="aiHistoryList"></div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       AI SONUC SUB-PAGE
+       ========================================== -->
+  <section class="page sub-page" id="pageAiSonuc">
+    <div class="sub-page-header">
+      <button class="back-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <h2>AI Cozum</h2>
+    </div>
+    <div id="aiSolutionContent"></div>
+  </section>
+
+  <!-- ==========================================
+       PROFIL PAGE
+       ========================================== -->
+  <section class="page" id="pageProfil">
+    <div class="page-header">
+      <h1>Profil</h1>
+    </div>
+    <div class="profile-avatar" id="profileAvatar">U</div>
+    <div class="profile-name" id="profileName">Kullanici</div>
+    <div class="profile-email" id="profileEmail">email@ornek.com</div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-value" id="profileCredits">0</div>
+        <div class="stat-label">Kredi</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🔥</div>
+        <div class="stat-value" id="profileStreak">0</div>
+        <div class="stat-label">Gun Serisi</div>
+      </div>
+    </div>
+
+    <div class="profile-section">
+      <h3 class="profile-section-title">Kredi Kullanim Gecmisi</h3>
+      <div class="history-list" id="profileUsageHistory">
+        <div class="history-empty">Henuz kullanim yok</div>
+      </div>
+    </div>
+
+    <div class="profile-section">
+      <h3 class="profile-section-title">Odeme Gecmisi</h3>
+      <div class="history-list" id="profilePaymentHistory">
+        <div class="history-empty">Henuz odeme yok</div>
+      </div>
+    </div>
+
+    <div class="profile-actions">
+      <button class="btn-secondary" onclick="navigateTo('pageKrediSatinAl',{isSubPage:true})">Kredi Satin Al</button>
+      <button class="btn-danger" onclick="handleLogout()">Cikis Yap</button>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       KREDI SATIN AL SUB-PAGE
+       ========================================== -->
+  <section class="page sub-page" id="pageKrediSatinAl">
+    <div class="sub-page-header">
+      <button class="back-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <h2>Kredi Satin Al</h2>
+    </div>
+    <div class="ai-remaining mb-16" id="krediCurrentCredits">Mevcut krediniz: 0</div>
+    <div class="credit-packages" id="creditPackages"></div>
+  </section>
+
+  <!-- ==========================================
+       BOTTOM TAB BAR
+       ========================================== -->
+  <nav class="bottom-tab-bar hidden" id="bottomTabBar">
+    <button class="tab-item active" data-page="pageDashboard" onclick="switchTab('pageDashboard')">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Ana Sayfa</span>
+    </button>
+    <button class="tab-item" data-page="pageKonular" onclick="switchTab('pageKonular')">
+      <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <span>Konular</span>
+    </button>
+    <button class="tab-item" data-page="pageSorular" onclick="switchTab('pageSorular')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span>Sorular</span>
+    </button>
+    <button class="tab-item" data-page="pageAiSor" onclick="switchTab('pageAiSor')">
+      <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      <span>AI Sor</span>
+    </button>
+    <button class="tab-item" data-page="pageProfil" onclick="switchTab('pageProfil')">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Profil</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ==========================================
+     MODALS
+     ========================================== -->
+<div class="modal-overlay" id="modalKrediUyari">
+  <div class="modal-card">
+    <div class="modal-icon">💰</div>
+    <h3 class="modal-title">Kredi Kullanimi</h3>
+    <p class="modal-message" id="modalKrediMessage">Bu islem 1 kredi harcayacak.</p>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="resolveCredit(false)">Vazgec</button>
+      <button class="btn-primary" onclick="resolveCredit(true)">Devam Et</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalKrediYetersiz">
+  <div class="modal-card">
+    <div class="modal-icon">😔</div>
+    <h3 class="modal-title">Yetersiz Kredi</h3>
+    <p class="modal-message">Bu islemi yapabilmek icin yeterli krediniz yok.</p>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="hideModal('modalKrediYetersiz')">Kapat</button>
+      <button class="btn-primary" onclick="hideModal('modalKrediYetersiz');navigateTo('pageKrediSatinAl',{isSubPage:true})">Kredi Satin Al</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <p class="loading-text" id="loadingText">Yukleniyor...</p>
+</div>
+
+<script>
+// ==========================================
+// MODULE 1: CONFIGURATION
+// ==========================================
+const CONFIG = {
+  SUPABASE_URL: 'https://YOUR_PROJECT.supabase.co',
+  SUPABASE_ANON_KEY: 'YOUR_ANON_KEY',
+  STORAGE_PREFIX: 'unihazirlik_',
+  CREDIT_COSTS: { KONU_ANLATIM: 1, KONU_DETAYLI: 1, SORU_BANKASI: 1, AI_SOR: 1 },
+  AI_SOLUTIONS_PER_CREDIT: 5,
+  QUESTIONS_PER_CREDIT: 10,
+  INITIAL_CREDITS: 5
+};
+
+// ==========================================
+// MODULE 2: SUPABASE AUTH CLIENT
+// ==========================================
+const sbAuth = {
+  _headers(token) {
+    const h = { 'Content-Type': 'application/json', 'apikey': CONFIG.SUPABASE_ANON_KEY };
+    if (token) h['Authorization'] = 'Bearer ' + token;
+    return h;
+  },
+  async signUp(email, password, name) {
+    const res = await fetch(CONFIG.SUPABASE_URL + '/auth/v1/signup', {
+      method: 'POST', headers: this._headers(),
+      body: JSON.stringify({ email, password, data: { name } })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || data.msg || 'Kayit hatasi');
+    return data;
+  },
+  async signIn(email, password) {
+    const res = await fetch(CONFIG.SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+      method: 'POST', headers: this._headers(),
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error_description || data.error || 'Giris hatasi');
+    this._storeTokens(data);
+    return data;
+  },
+  async getUser() {
+    const token = localStorage.getItem(CONFIG.STORAGE_PREFIX + 'token');
+    if (!token) return null;
+    const res = await fetch(CONFIG.SUPABASE_URL + '/auth/v1/user', {
+      headers: this._headers(token)
+    });
+    if (!res.ok) { this._clearTokens(); return null; }
+    return await res.json();
+  },
+  async signOut() {
+    const token = localStorage.getItem(CONFIG.STORAGE_PREFIX + 'token');
+    if (token) {
+      try { await fetch(CONFIG.SUPABASE_URL + '/auth/v1/logout', { method: 'POST', headers: this._headers(token) }); } catch(e) {}
+    }
+    this._clearTokens();
+  },
+  async resetPassword(email) {
+    const res = await fetch(CONFIG.SUPABASE_URL + '/auth/v1/recover', {
+      method: 'POST', headers: this._headers(),
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || 'Sifirlama hatasi');
+    return data;
+  },
+  _storeTokens(data) {
+    localStorage.setItem(CONFIG.STORAGE_PREFIX + 'token', data.access_token);
+    if (data.refresh_token) localStorage.setItem(CONFIG.STORAGE_PREFIX + 'refresh', data.refresh_token);
+  },
+  _clearTokens() {
+    localStorage.removeItem(CONFIG.STORAGE_PREFIX + 'token');
+    localStorage.removeItem(CONFIG.STORAGE_PREFIX + 'refresh');
+  }
+};
+
+// ==========================================
+// MODULE 3: APP STATE
+// ==========================================
+const state = {
+  user: null,
+  currentPage: 'pageAuth',
+  pageHistory: [],
+  credits: 0,
+  streak: 0,
+  lastLoginDate: null,
+  motivationIndex: 0,
+  selectedExamType: 'tyt',
+  selectedSubject: null,
+  selectedTopic: null,
+  konuExplanation: '',
+  konuDetailedUsed: false,
+  sorularExamType: 'tyt',
+  sorularSubject: null,
+  quizQuestions: [],
+  quizCurrentIndex: 0,
+  quizAnswers: [],
+  quizCompleted: false,
+  aiInputMode: 'text',
+  aiSolutionsUsed: 0,
+  aiHistory: [],
+  usageHistory: [],
+  paymentHistory: []
+};
+
+let creditResolve = null;
+
+// ==========================================
+// MODULE 4: DOM HELPERS
+// ==========================================
+const $ = id => document.getElementById(id);
+const $$ = sel => document.querySelectorAll(sel);
+
+// ==========================================
+// MODULE 5: NAVIGATION SYSTEM
+// ==========================================
+function navigateTo(pageId, options = {}) {
+  const { isSubPage = false, skipHistory = false } = options;
+  const current = $(state.currentPage);
+  const target = $(pageId);
+  if (!target || pageId === state.currentPage) return;
+
+  if (current) {
+    current.classList.remove('active');
+    current.classList.remove('sub-page');
+  }
+
+  if (isSubPage && !skipHistory) {
+    state.pageHistory.push(state.currentPage);
+  }
+
+  state.currentPage = pageId;
+  target.classList.add('active');
+  if (isSubPage) target.classList.add('sub-page');
+  target.scrollTop = 0;
+  window.scrollTo(0, 0);
+
+  // Update tab bar only for main pages
+  const mainPages = ['pageDashboard','pageKonular','pageSorular','pageAiSor','pageProfil'];
+  if (mainPages.includes(pageId)) {
+    $$('.tab-item').forEach(t => t.classList.toggle('active', t.dataset.page === pageId));
+  }
+
+  // Trigger page-specific rendering
+  if (pageId === 'pageDashboard') renderDashboard();
+  if (pageId === 'pageKonular') renderSubjectList('konular');
+  if (pageId === 'pageSorular') renderSubjectList('sorular');
+  if (pageId === 'pageAiSor') updateAiRemaining();
+  if (pageId === 'pageProfil') renderProfile();
+  if (pageId === 'pageKrediSatinAl') renderCreditPackages();
+}
+
+function goBack() {
+  if (state.pageHistory.length > 0) {
+    const prev = state.pageHistory.pop();
+    const current = $(state.currentPage);
+    if (current) { current.classList.remove('active'); current.classList.remove('sub-page'); }
+    state.currentPage = prev;
+    $(prev).classList.add('active');
+    window.scrollTo(0, 0);
+
+    const mainPages = ['pageDashboard','pageKonular','pageSorular','pageAiSor','pageProfil'];
+    if (mainPages.includes(prev)) {
+      $$('.tab-item').forEach(t => t.classList.toggle('active', t.dataset.page === prev));
+    }
+
+    if (prev === 'pageProfil') renderProfile();
+    if (prev === 'pageDashboard') renderDashboard();
+  }
+}
+
+function switchTab(pageId) {
+  state.pageHistory = [];
+  const mainPages = ['pageDashboard','pageKonular','pageSorular','pageAiSor','pageProfil'];
+  mainPages.forEach(p => { const el = $(p); if(el) { el.classList.remove('active'); el.classList.remove('sub-page'); } });
+  // Also hide sub-pages
+  ['pageKonuAnlatim','pageQuiz','pageQuizResult','pageAiSonuc','pageKrediSatinAl'].forEach(p => {
+    const el = $(p); if(el) { el.classList.remove('active'); el.classList.remove('sub-page'); }
+  });
+  navigateTo(pageId);
+}
+
+function showBottomBar(show) {
+  $('bottomTabBar').classList.toggle('hidden', !show);
+}
+
+// ==========================================
+// MODULE 6: AUTH MODULE
+// ==========================================
+function showAuthForm(mode) {
+  $('authLoginForm').classList.add('hidden');
+  $('authRegisterForm').classList.add('hidden');
+  $('authForgotForm').classList.add('hidden');
+  $('authVerifyMessage').classList.add('hidden');
+  $('authError').classList.add('hidden');
+  if (mode === 'login') $('authLoginForm').classList.remove('hidden');
+  if (mode === 'register') $('authRegisterForm').classList.remove('hidden');
+  if (mode === 'forgot') $('authForgotForm').classList.remove('hidden');
+  if (mode === 'verify') $('authVerifyMessage').classList.remove('hidden');
+}
+
+function showAuthError(msg) {
+  $('authError').textContent = msg;
+  $('authError').classList.remove('hidden');
+}
+
+async function handleLogin() {
+  const email = $('loginEmail').value.trim();
+  const password = $('loginPassword').value;
+  if (!email || !password) return showAuthError('Lutfen tum alanlari doldurun.');
+  $('loginBtn').disabled = true;
+  try {
+    const data = await sbAuth.signIn(email, password);
+    const user = { id: data.user.id, email: data.user.email, name: data.user.user_metadata?.name || '' };
+    setLoggedIn(user);
+  } catch(e) {
+    showAuthError(e.message);
+  }
+  $('loginBtn').disabled = false;
+}
+
+async function handleRegister() {
+  const name = $('registerName').value.trim();
+  const email = $('registerEmail').value.trim();
+  const password = $('registerPassword').value;
+  if (!name || !email || !password) return showAuthError('Lutfen tum alanlari doldurun.');
+  if (password.length < 6) return showAuthError('Sifre en az 6 karakter olmali.');
+  $('registerBtn').disabled = true;
+  try {
+    await sbAuth.signUp(email, password, name);
+    showAuthForm('verify');
+  } catch(e) {
+    showAuthError(e.message);
+  }
+  $('registerBtn').disabled = false;
+}
+
+async function handleForgotPassword() {
+  const email = $('forgotEmail').value.trim();
+  if (!email) return showAuthError('Lutfen e-posta adresinizi girin.');
+  try {
+    await sbAuth.resetPassword(email);
+    showToast('Sifre sifirlama linki gonderildi!', 'success');
+    showAuthForm('login');
+  } catch(e) {
+    showAuthError(e.message);
+  }
+}
+
+function setLoggedIn(user) {
+  state.user = user;
+  loadLocalState();
+  if (state.credits === 0 && state.usageHistory.length === 0 && state.paymentHistory.length === 0) {
+    state.credits = CONFIG.INITIAL_CREDITS;
+    saveLocalState();
+  }
+  checkAndUpdateStreak();
+  $('pageAuth').classList.remove('active');
+  showBottomBar(true);
+  navigateTo('pageDashboard');
+}
+
+function handleLogout() {
+  sbAuth.signOut();
+  state.user = null;
+  state.credits = 0;
+  state.streak = 0;
+  state.pageHistory = [];
+  showBottomBar(false);
+  $$('.page').forEach(p => p.classList.remove('active'));
+  $('pageAuth').classList.add('active');
+  state.currentPage = 'pageAuth';
+  showAuthForm('login');
+  showToast('Cikis yapildi', 'info');
+}
+
+async function restoreSession() {
+  try {
+    const user = await sbAuth.getUser();
+    if (user) {
+      setLoggedIn({ id: user.id, email: user.email, name: user.user_metadata?.name || '' });
+    }
+  } catch(e) { /* no session */ }
+}
+
+// ==========================================
+// MODULE 7: DASHBOARD
+// ==========================================
+function renderDashboard() {
+  const name = state.user?.name || '';
+  $('dashGreeting').textContent = name ? `Merhaba, ${name.split(' ')[0]}!` : 'Merhaba!';
+
+  const now = new Date();
+  const months = ['Ocak','Subat','Mart','Nisan','Mayis','Haziran','Temmuz','Agustos','Eylul','Ekim','Kasim','Aralik'];
+  const days = ['Pazar','Pazartesi','Sali','Carsamba','Persembe','Cuma','Cumartesi'];
+  $('dashDate').textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+
+  $('dashCredits').textContent = state.credits;
+  $('dashStreak').textContent = state.streak;
+
+  const msg = MOTIVATION_MESSAGES[state.motivationIndex % MOTIVATION_MESSAGES.length];
+  $('motivationText').textContent = msg;
+  $('motivationDay').textContent = `${state.streak}. gun serisi`;
+}
+
+function animateStreak() {
+  const el = $('dashStreak');
+  el.style.animation = 'pulse 0.4s ease';
+  setTimeout(() => el.style.animation = '', 400);
+}
+
+// ==========================================
+// MODULE 8: STREAK SYSTEM
+// ==========================================
+function checkAndUpdateStreak() {
+  const today = new Date().toISOString().split('T')[0];
+  if (state.lastLoginDate === today) return;
+
+  if (state.lastLoginDate) {
+    const last = new Date(state.lastLoginDate);
+    const diff = Math.floor((new Date(today) - last) / 86400000);
+    if (diff === 1) {
+      state.streak++;
+    } else if (diff > 1) {
+      state.streak = 1;
+    }
+  } else {
+    state.streak = 1;
+  }
+
+  state.lastLoginDate = today;
+  state.motivationIndex = (state.motivationIndex + 1) % MOTIVATION_MESSAGES.length;
+  saveLocalState();
+}
+
+const MOTIVATION_MESSAGES = [
+  "Her gun bir adim daha yakinsin!",
+  "Basari, kucuk adimlarin toplamidir.",
+  "Bugun yapmaya basla, yarin icin pismanlik duyma.",
+  "Caliskan ogrenci, basarili ogrencidir.",
+  "Hedefe odaklan, engelleri unut!",
+  "Disiplin, basarinin anahtaridir.",
+  "Bugunku emek, yarinin basarisidir.",
+  "Vazgecme, her gun biraz daha ilerle.",
+  "Kucuk adimlar buyuk basarilara goturu.",
+  "Kendine inan, basarabilirsin!",
+  "Zorluklar seni guclendirir.",
+  "Her yeni gun, yeni bir firsattir.",
+  "Calismanin karsiligi her zaman gelir.",
+  "Hedefin buyuk olsun, calisman daha buyuk.",
+  "Basari bir gunde gelmez ama her gun gelir.",
+  "Bugunku fedakarlik, yarinin ozgurlugudur.",
+  "Okumak, gelecege yatirimdir.",
+  "Sen de basarabilirsin, yeter ki iste!",
+  "Motivasyonun dusmesin, hedefini hatirla.",
+  "Her soru cozdugunde bir adim one geciyorsun.",
+  "Tekrar, basarinin anasidir.",
+  "Zamanini iyi kullan, gelecegini insa et.",
+  "Dun gecti, yarina hazirlan, bugunu degerlendir.",
+  "Basariya giden yol, calis, calis, calis!",
+  "Pes etme, en karanlik an safaktan hemen oncedir.",
+  "Hayallerin buyukse, emeklerin de buyuk olmali.",
+  "Ogrenmenin yasi yok, sinirlari yok.",
+  "Konsantrasyon basarinin yarisini olusturur.",
+  "Plansiz calisma, pusulasiz yolculuktur.",
+  "Hedefini yaz, her gun ona bak.",
+  "Basarili insanlar, baskaları uyurken calisir.",
+  "Notlarin degil, ogrenmen onemli.",
+  "Her test bir ders, her hata bir firsat.",
+  "Sistematik calismak, rastgele calismaktan iyidir.",
+  "Ders calismanin en iyi zamani simdidir.",
+  "Kaynak degil, tekrar onemlidir.",
+  "Dershane degil, irade basariyi getirir.",
+  "Zamani yonetemeyen, hicbir seyi yonetemez.",
+  "Az calis, oz calis, verimli calis.",
+  "Unutma: sinav bir maraton, sprint degil.",
+  "Deneme sinavlari korkulacak degil, ogrencek yerlerdir.",
+  "Bilgi guctur, oku ve guclen.",
+  "Her gun 1 saat bile fark yaratir.",
+  "Rakibin kendinsin, dunden daha iyi ol.",
+  "Motivasyon baslatir, aliskanlik surdurur.",
+  "Hedefine ulastigin gunku mutlulugu hayal et.",
+  "Kotu bir calismadan bile bir sey ogrenilebilir.",
+  "Zor konular, cok tekrar edince kolaylasir.",
+  "Universite hayalin icin bugunden calis.",
+  "Gelecekteki sen, bugunku sana tesekkur edecek.",
+  "Formula ezberlemekten cok, anlamaya calis.",
+  "Test cozerken hizdan cok, dogru cevap onemli.",
+  "Her yanlis, dogruya giden yolda bir adimdir.",
+  "Paragraf sorularinda sabir, basarinin sirridir.",
+  "Matematik korkulmaz, tekrar edilir.",
+  "Fen bilimlerinde deney kadar dusunme de onemli.",
+  "Tarih ezber degil, anlayarak ogrenmektir.",
+  "Geometri gozu egitmektir, pratik sart.",
+  "Cografyayi harita ile calis, daha kalici olur.",
+  "Biyoloji detay ister, dikkatlice oku.",
+  "Fizik formul degil, mantik ister.",
+  "Kimyada periyodik tablo en iyi dostundur.",
+  "Edebiyatta donem ozellikleri kilit noktadir.",
+  "Felsefe sorulari dikkatle okunursa kolay gelir.",
+  "Din kulturu sorulari ayet ve sure bilgisi ister.",
+  "Ingilizce her gun 10 kelime ogren.",
+  "Deneme sinavi sonuclarina takilma, analiz et.",
+  "Yanlis defteri tut, ayni hatalari tekrarlama.",
+  "Gunde 5 saat verimli calisma yeterli.",
+  "Mola vermek tembellik degil, verimlilik yontemidir.",
+  "Erken kalk, sabah zihni daha berraktir.",
+  "Gece calisma yerine sabah erken calis.",
+  "Spor yap, zihin bedene baglidir.",
+  "Su ic, beyin aktivitesi icin onemli.",
+  "Sosyal medya sinav doneminde azalmali.",
+  "Telefonu ders calisirken uzak tut.",
+  "Sessiz bir ortam, verimli calismanin temelidir.",
+  "Pomodoro teknigi: 25 dk calis, 5 dk mola.",
+  "Konu anlatimi + soru cozumu = basari formulu.",
+  "Sinav stresi normal, onu enerjiye donustur.",
+  "Nefes egzersizi yaparak sinav kaygisini azalt.",
+  "Sinav gunu erken uyan, kahvalti et.",
+  "Sinav sirasinda once kolay sorulari coz.",
+  "Zaman yonetimi sinavda hayat kurtarir.",
+  "Tum secenekleri oku, ilk goze carpana atlama.",
+  "Soru kokunu dikkatlice oku, tuzak olabilir.",
+  "Bilmedigin soruda fazla vakit harcama.",
+  "Isaretleme teknigi: emin olmadigini isaretle, don.",
+  "Optik formda isaretle, sondaki surprizlerden kacin.",
+  "TYT temel, iyi bir TYT bircok kapiyi acar.",
+  "AYT alan bilgisi, TYT genel kultur demektir.",
+  "Her ders icin haftalik plan yap.",
+  "Aylik hedefler koy, haftalik kontrol et.",
+  "Calismadaki sureklili, yogunluktan onemlidir.",
+  "Arkadaslarinla soru paylas, birlikte ogrenin.",
+  "Ogretmenine danismaktan cekinme.",
+  "Hata yapmak ogremenin bir parçasidir.",
+  "Kendini odullendir, kucuk basarilari kutla.",
+  "Universite senin icin yeni bir baslangic olacak.",
+  "Bu yolculukta yalniz degilsin, biz variz!",
+  "Her soru seni hedefe bir adim daha yaklastiriyor."
+];
+
+// ==========================================
+// MODULE 9: CREDIT SYSTEM
+// ==========================================
+function confirmCreditUsage(amount, description) {
+  if (state.credits < amount) {
+    showModal('modalKrediYetersiz');
+    return Promise.resolve(false);
+  }
+  return new Promise(resolve => {
+    creditResolve = resolve;
+    $('modalKrediMessage').textContent = `Bu islem ${amount} kredi harcayacak. Kalan krediniz: ${state.credits}`;
+    showModal('modalKrediUyari');
+  });
+}
+
+function resolveCredit(val) {
+  hideModal('modalKrediUyari');
+  if (creditResolve) { creditResolve(val); creditResolve = null; }
+}
+
+function deductCredits(amount, type, description) {
+  state.credits -= amount;
+  state.usageHistory.unshift({ type, amount: -amount, description, date: new Date().toISOString() });
+  saveLocalState();
+  updateCreditsUI();
+}
+
+function addCredits(amount, packageName, price) {
+  state.credits += amount;
+  state.paymentHistory.unshift({ package: packageName, credits: amount, price, date: new Date().toISOString() });
+  state.usageHistory.unshift({ type: 'purchase', amount: amount, description: `${packageName} paketi`, date: new Date().toISOString() });
+  saveLocalState();
+  updateCreditsUI();
+  showToast(`${amount} kredi eklendi!`, 'success');
+}
+
+function updateCreditsUI() {
+  $('dashCredits').textContent = state.credits;
+  $('profileCredits').textContent = state.credits;
+  $('krediCurrentCredits').textContent = `Mevcut krediniz: ${state.credits}`;
+}
+
+const CREDIT_PACKAGES = [
+  { id: 'starter', name: 'Baslangic', credits: 10, price: 29.99 },
+  { id: 'standard', name: 'Standart', credits: 30, price: 69.99, popular: true },
+  { id: 'premium', name: 'Premium', credits: 75, price: 149.99 },
+  { id: 'mega', name: 'Mega', credits: 200, price: 349.99 }
+];
+
+function renderCreditPackages() {
+  $('krediCurrentCredits').textContent = `Mevcut krediniz: ${state.credits}`;
+  $('creditPackages').innerHTML = CREDIT_PACKAGES.map(pkg => `
+    <div class="credit-package ${pkg.popular ? 'popular' : ''}">
+      <div class="pkg-header">
+        <span class="pkg-name">${pkg.name}</span>
+        <span class="pkg-credits">${pkg.credits} Kredi</span>
+      </div>
+      <div class="pkg-price">${pkg.price.toFixed(2)} <span>TL</span></div>
+      <button class="pkg-buy-btn" onclick="handleBuyPackage('${pkg.id}')">Satin Al</button>
+    </div>
+  `).join('');
+}
+
+function handleBuyPackage(pkgId) {
+  const pkg = CREDIT_PACKAGES.find(p => p.id === pkgId);
+  if (!pkg) return;
+  // Mock purchase - no real payment
+  addCredits(pkg.credits, pkg.name, pkg.price);
+}
+
+// ==========================================
+// MODULE 10: EXAM DATA
+// ==========================================
+const EXAM_DATA = {
+  tyt: {
+    name: 'TYT',
+    subjects: [
+      { id:'tyt_turkce', name:'Turkce', icon:'📝', color:'#EF4444', topics:[
+        {id:'tyt_turkce_1',name:'Soz Yorumu'},{id:'tyt_turkce_2',name:'Deyim ve Atasozleri'},{id:'tyt_turkce_3',name:'Paragraf Yorumlama'},{id:'tyt_turkce_4',name:'Ana Dusunce Bulma'},{id:'tyt_turkce_5',name:'Anlam Bilimleri'}
+      ]},
+      { id:'tyt_matematik', name:'Matematik', icon:'📐', color:'#3B82F6', topics:[
+        {id:'tyt_mat_1',name:'Temel Kavramlar'},{id:'tyt_mat_2',name:'Bolme ve Bolunebilme'},{id:'tyt_mat_3',name:'EBOB - EKOK'},{id:'tyt_mat_4',name:'Rasyonel Sayilar'},{id:'tyt_mat_5',name:'Basit Esitsizlikler'},{id:'tyt_mat_6',name:'Mutlak Deger'},{id:'tyt_mat_7',name:'Uslu Sayilar'},{id:'tyt_mat_8',name:'Koklu Sayilar'},{id:'tyt_mat_9',name:'Carpanlara Ayirma'},{id:'tyt_mat_10',name:'Oran Oranti'}
+      ]},
+      { id:'tyt_fizik', name:'Fizik', icon:'⚡', color:'#8B5CF6', topics:[
+        {id:'tyt_fiz_1',name:'Fizik Bilimine Giris'},{id:'tyt_fiz_2',name:'Madde ve Ozellikleri'},{id:'tyt_fiz_3',name:'Hareket ve Kuvvet'},{id:'tyt_fiz_4',name:'Enerji'},{id:'tyt_fiz_5',name:'Isi ve Sicaklik'}
+      ]},
+      { id:'tyt_kimya', name:'Kimya', icon:'🧪', color:'#10B981', topics:[
+        {id:'tyt_kim_1',name:'Kimya Bilimi'},{id:'tyt_kim_2',name:'Atom ve Periyodik Sistem'},{id:'tyt_kim_3',name:'Kimyasal Turlerin Etkilesimleri'},{id:'tyt_kim_4',name:'Maddenin Halleri'},{id:'tyt_kim_5',name:'Doganin Temel Maddeleri'}
+      ]},
+      { id:'tyt_biyoloji', name:'Biyoloji', icon:'🧬', color:'#14B8A6', topics:[
+        {id:'tyt_bio_1',name:'Yasam Bilimi Biyoloji'},{id:'tyt_bio_2',name:'Hucre'},{id:'tyt_bio_3',name:'Canlilar Dunyasi'},{id:'tyt_bio_4',name:'Ekoloji'}
+      ]},
+      { id:'tyt_tarih', name:'Tarih', icon:'🏛️', color:'#F59E0B', topics:[
+        {id:'tyt_tar_1',name:'Tarih ve Zaman'},{id:'tyt_tar_2',name:'Insanligin Ilk Donemleri'},{id:'tyt_tar_3',name:'Orta Cagda Dunya'},{id:'tyt_tar_4',name:'Ilk ve Orta Caglarda Turk Dunyasi'},{id:'tyt_tar_5',name:'Islam Medeniyetinin Dogusu'},{id:'tyt_tar_6',name:'Turk-Islam Devletleri'},{id:'tyt_tar_7',name:'Osmanli Kurulus Donemi'},{id:'tyt_tar_8',name:'Osmanli Yukselme Donemi'},{id:'tyt_tar_9',name:'Kurtulus Savasi Hazirlik Donemi'}
+      ]},
+      { id:'tyt_cografya', name:'Cografya', icon:'🌍', color:'#06B6D4', topics:[
+        {id:'tyt_cog_1',name:'Dogal Sistemler'},{id:'tyt_cog_2',name:'Beseri Sistemler'},{id:'tyt_cog_3',name:'Turkiyenin Fiziki Cografyasi'},{id:'tyt_cog_4',name:'Cografyanin Konulari'}
+      ]},
+      { id:'tyt_felsefe', name:'Felsefe', icon:'💭', color:'#EC4899', topics:[
+        {id:'tyt_fel_1',name:'Felsefeyi Tanima'},{id:'tyt_fel_2',name:'Bilgi Felsefesi'},{id:'tyt_fel_3',name:'Varlik Felsefesi'},{id:'tyt_fel_4',name:'Ahlak Felsefesi'}
+      ]},
+      { id:'tyt_din', name:'Din Kulturu', icon:'🕌', color:'#059669', topics:[
+        {id:'tyt_din_1',name:'Bilgi ve Inanc'},{id:'tyt_din_2',name:'Islam ve Ibadet'},{id:'tyt_din_3',name:'Hz. Muhammed\'in Hayati'}
+      ]}
+    ]
+  },
+  ayt: {
+    name: 'AYT',
+    subjects: [
+      { id:'ayt_matematik', name:'Matematik', icon:'📊', color:'#3B82F6', topics:[
+        {id:'ayt_mat_1',name:'Fonksiyonlar'},{id:'ayt_mat_2',name:'Polinomlar'},{id:'ayt_mat_3',name:'Ikinci Dereceden Denklemler'},{id:'ayt_mat_4',name:'Logaritma'},{id:'ayt_mat_5',name:'Diziler ve Seriler'},{id:'ayt_mat_6',name:'Limit ve Sureklilik'},{id:'ayt_mat_7',name:'Turev'},{id:'ayt_mat_8',name:'Integral'}
+      ]},
+      { id:'ayt_fizik', name:'Fizik', icon:'⚡', color:'#8B5CF6', topics:[
+        {id:'ayt_fiz_1',name:'Kuvvet ve Hareket'},{id:'ayt_fiz_2',name:'Elektrik ve Manyetizma'},{id:'ayt_fiz_3',name:'Dalgalar'},{id:'ayt_fiz_4',name:'Optik'},{id:'ayt_fiz_5',name:'Modern Fizik'}
+      ]},
+      { id:'ayt_kimya', name:'Kimya', icon:'🧪', color:'#10B981', topics:[
+        {id:'ayt_kim_1',name:'Modern Atom Teorisi'},{id:'ayt_kim_2',name:'Gazlar'},{id:'ayt_kim_3',name:'Kimyasal Tepkimelerde Enerji'},{id:'ayt_kim_4',name:'Kimyasal Denge'},{id:'ayt_kim_5',name:'Asitler ve Bazlar'}
+      ]},
+      { id:'ayt_biyoloji', name:'Biyoloji', icon:'🧬', color:'#14B8A6', topics:[
+        {id:'ayt_bio_1',name:'Genetik'},{id:'ayt_bio_2',name:'Evrim'},{id:'ayt_bio_3',name:'Ekoloji ve Cevre'},{id:'ayt_bio_4',name:'Biyoteknoloji'}
+      ]},
+      { id:'ayt_edebiyat', name:'Turk Dili ve Edebiyati', icon:'📚', color:'#EF4444', topics:[
+        {id:'ayt_ede_1',name:'Giris - Edebiyat Tarihi'},{id:'ayt_ede_2',name:'Divan Edebiyati'},{id:'ayt_ede_3',name:'Halk Edebiyati'},{id:'ayt_ede_4',name:'Tanzimat Donemi'},{id:'ayt_ede_5',name:'Milli Edebiyat Donemi'},{id:'ayt_ede_6',name:'Cumhuriyet Donemi'}
+      ]},
+      { id:'ayt_tarih', name:'Tarih', icon:'🏛️', color:'#F59E0B', topics:[
+        {id:'ayt_tar_1',name:'Degisen Dunya Dengeleri'},{id:'ayt_tar_2',name:'Sanayi Devrimi'},{id:'ayt_tar_3',name:'I. Dunya Savasi'},{id:'ayt_tar_4',name:'Kurtulus Savasi'},{id:'ayt_tar_5',name:'Ataturk Ilke ve Inkilaplari'}
+      ]},
+      { id:'ayt_cografya', name:'Cografya', icon:'🌍', color:'#06B6D4', topics:[
+        {id:'ayt_cog_1',name:'Turkiyenin Yer Sekilleri'},{id:'ayt_cog_2',name:'Turkiyenin Iklimi'},{id:'ayt_cog_3',name:'Bolge Kavrami'},{id:'ayt_cog_4',name:'Ulasim ve Ticaret'}
+      ]}
+    ]
+  }
+};
+
+// ==========================================
+// MODULE 11: SUBJECT & TOPIC RENDERING
+// ==========================================
+function setExamType(section, type) {
+  if (section === 'konular') {
+    state.selectedExamType = type;
+    $('konularExamType').querySelectorAll('.exam-type-btn').forEach(b => b.classList.toggle('active', b.textContent.trim().toLowerCase() === type));
+    renderSubjectList('konular');
+  } else {
+    state.sorularExamType = type;
+    $('sorularExamType').querySelectorAll('.exam-type-btn').forEach(b => b.classList.toggle('active', b.textContent.trim().toLowerCase() === type));
+    renderSubjectList('sorular');
+  }
+}
+
+function renderSubjectList(section) {
+  const examType = section === 'konular' ? state.selectedExamType : state.sorularExamType;
+  const subjects = EXAM_DATA[examType].subjects;
+  const containerId = section === 'konular' ? 'konularSubjectList' : 'sorularSubjectList';
+  const clickHandler = section === 'konular' ? 'selectKonuSubject' : 'selectSoruSubject';
+
+  $(containerId).innerHTML = subjects.map(sub => `
+    <div class="subject-card" onclick="${clickHandler}('${sub.id}')">
+      <div class="subject-icon" style="background:${sub.color}15">${sub.icon}</div>
+      <div class="subject-info">
+        <div class="subject-name">${sub.name}</div>
+        <div class="subject-count">${sub.topics.length} konu</div>
+      </div>
+      <div class="subject-chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+  `).join('');
+}
+
+// ==========================================
+// MODULE 12: KONU ANLATIMI
+// ==========================================
+function selectKonuSubject(subjectId) {
+  const examType = state.selectedExamType;
+  const subject = EXAM_DATA[examType].subjects.find(s => s.id === subjectId);
+  if (!subject) return;
+
+  state.selectedSubject = subject;
+  state.selectedTopic = null;
+  state.konuExplanation = '';
+  state.konuDetailedUsed = false;
+
+  $('konuAnlatimTitle').textContent = subject.name;
+  $('konuTopicList').innerHTML = subject.topics.map(t => `
+    <div class="topic-card" id="topic_${t.id}" onclick="selectTopic('${t.id}')">
+      <span class="topic-name">${t.name}</span>
+      <button class="topic-action" onclick="event.stopPropagation();handleKonuAnlat('${t.id}')">Anlat</button>
+    </div>
+  `).join('');
+
+  $('konuPlaceholder').classList.remove('hidden');
+  $('konuText').classList.add('hidden');
+  $('konuActions').classList.add('hidden');
+
+  navigateTo('pageKonuAnlatim', { isSubPage: true });
+}
+
+function selectTopic(topicId) {
+  $$('.topic-card').forEach(c => c.classList.remove('active'));
+  const el = $('topic_' + topicId);
+  if (el) el.classList.add('active');
+  state.selectedTopic = topicId;
+}
+
+async function handleKonuAnlat(topicId) {
+  selectTopic(topicId);
+  const topic = state.selectedSubject.topics.find(t => t.id === topicId);
+  if (!topic) return;
+
+  const confirmed = await confirmCreditUsage(1, 'Konu Anlatimi');
+  if (!confirmed) return;
+
+  deductCredits(1, 'konu_anlatim', `${state.selectedSubject.name} - ${topic.name}`);
+
+  const explanation = await getMockExplanation(topicId, topic.name);
+  state.konuExplanation = explanation;
+  state.konuDetailedUsed = false;
+
+  $('konuPlaceholder').classList.add('hidden');
+  $('konuText').classList.remove('hidden');
+  $('konuText').innerHTML = formatExplanation(explanation);
+  $('konuActions').classList.remove('hidden');
+
+  $('konuContentArea').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function handleDetayliAnlat() {
+  if (state.konuDetailedUsed) return showToast('Bu konu icin detayli anlatim zaten kullanildi.', 'info');
+  const topic = state.selectedSubject?.topics.find(t => t.id === state.selectedTopic);
+  if (!topic) return;
+
+  const confirmed = await confirmCreditUsage(1, 'Detayli Konu Anlatimi');
+  if (!confirmed) return;
+
+  deductCredits(1, 'konu_detayli', `${state.selectedSubject.name} - ${topic.name} (Detayli)`);
+
+  const detailed = await getMockDetailedExplanation(state.selectedTopic, topic.name);
+  state.konuDetailedUsed = true;
+
+  $('konuText').innerHTML += '<hr style="margin:20px 0;border:none;border-top:2px solid var(--primary-light)">' + formatExplanation(detailed);
+  $('konuActions').classList.add('hidden');
+}
+
+function formatExplanation(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+}
+
+// ==========================================
+// MODULE 13: SORU BANKASI
+// ==========================================
+function selectSoruSubject(subjectId) {
+  const examType = state.sorularExamType;
+  const subject = EXAM_DATA[examType].subjects.find(s => s.id === subjectId);
+  if (!subject) return;
+
+  state.sorularSubject = subject;
+  startTopicSelection(subject);
+}
+
+function startTopicSelection(subject) {
+  // Use quiz page to show topics first, then start quiz
+  const topicHtml = `
+    <div class="sub-page-header">
+      <button class="back-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <h2>${subject.name} - Konu Sec</h2>
+    </div>
+    <div class="topic-list">
+      ${subject.topics.map(t => `
+        <div class="topic-card" onclick="startQuiz('${t.id}')">
+          <span class="topic-name">${t.name}</span>
+          <button class="topic-action" onclick="event.stopPropagation();startQuiz('${t.id}')">Test Baslat</button>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  $('pageQuiz').innerHTML = topicHtml;
+  navigateTo('pageQuiz', { isSubPage: true });
+}
+
+async function startQuiz(topicId) {
+  const subject = state.sorularSubject;
+  const topic = subject.topics.find(t => t.id === topicId);
+  if (!topic) return;
+
+  const confirmed = await confirmCreditUsage(1, `Soru Bankasi - ${topic.name}`);
+  if (!confirmed) return;
+
+  deductCredits(1, 'soru_bankasi', `${subject.name} - ${topic.name} (10 Soru)`);
+
+  showLoading('Sorular hazirlaniyor...');
+  const questions = await getMockQuestions(topicId, topic.name);
+  hideLoading();
+
+  state.quizQuestions = questions;
+  state.quizCurrentIndex = 0;
+  state.quizAnswers = [];
+  state.quizCompleted = false;
+
+  // Rebuild quiz page
+  $('pageQuiz').innerHTML = `
+    <div class="sub-page-header">
+      <button class="back-btn" onclick="confirmQuizExit()">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <h2 id="quizTitle">${topic.name}</h2>
+      <span class="badge" id="quizProgress">1/${questions.length}</span>
+    </div>
+    <div class="quiz-progress-bar">
+      <div class="quiz-progress-fill" id="quizProgressFill" style="width:${100/questions.length}%"></div>
+    </div>
+    <div class="quiz-question-card">
+      <div class="quiz-question-num" id="quizQuestionNum">Soru 1</div>
+      <div class="quiz-question-text" id="quizQuestionText"></div>
+    </div>
+    <div class="quiz-options" id="quizOptions"></div>
+    <div class="quiz-feedback hidden" id="quizFeedback"></div>
+    <button class="btn-primary hidden" id="quizNextBtn" onclick="nextQuestion()">Sonraki Soru</button>
+  `;
+
+  renderQuestion(0);
+}
+
+function renderQuestion(index) {
+  const q = state.quizQuestions[index];
+  if (!q) return;
+
+  $('quizQuestionNum').textContent = `Soru ${index + 1}`;
+  $('quizQuestionText').textContent = q.text;
+  $('quizProgress').textContent = `${index + 1}/${state.quizQuestions.length}`;
+  $('quizProgressFill').style.width = `${((index + 1) / state.quizQuestions.length) * 100}%`;
+
+  const letters = ['A', 'B', 'C', 'D', 'E'];
+  $('quizOptions').innerHTML = q.options.map((opt, i) => `
+    <button class="quiz-option" onclick="handleAnswer(${i})">
+      <span class="quiz-option-letter">${letters[i]}</span>
+      <span>${opt}</span>
+    </button>
+  `).join('');
+
+  $('quizFeedback').classList.add('hidden');
+  $('quizNextBtn').classList.add('hidden');
+}
+
+function handleAnswer(selectedIndex) {
+  const q = state.quizQuestions[state.quizCurrentIndex];
+  const isCorrect = selectedIndex === q.correctIndex;
+  const options = $('quizOptions').querySelectorAll('.quiz-option');
+
+  options.forEach((opt, i) => {
+    opt.classList.add('disabled');
+    opt.onclick = null;
+    if (i === q.correctIndex) opt.classList.add('correct');
+    if (i === selectedIndex && !isCorrect) opt.classList.add('wrong');
+  });
+
+  state.quizAnswers.push({ selected: selectedIndex, correct: q.correctIndex, isCorrect });
+
+  const feedback = $('quizFeedback');
+  feedback.classList.remove('hidden', 'correct', 'wrong');
+  if (isCorrect) {
+    feedback.classList.add('correct');
+    feedback.textContent = 'Dogru! Tebrikler.';
+  } else {
+    feedback.classList.add('wrong');
+    const letters = ['A', 'B', 'C', 'D', 'E'];
+    feedback.textContent = `Yanlis. Dogru cevap: ${letters[q.correctIndex]}`;
+  }
+
+  const nextBtn = $('quizNextBtn');
+  nextBtn.classList.remove('hidden');
+  if (state.quizCurrentIndex === state.quizQuestions.length - 1) {
+    nextBtn.textContent = 'Sonuclari Gor';
+  } else {
+    nextBtn.textContent = 'Sonraki Soru';
+  }
+}
+
+function nextQuestion() {
+  if (state.quizCurrentIndex >= state.quizQuestions.length - 1) {
+    showQuizResults();
+    return;
+  }
+  state.quizCurrentIndex++;
+  renderQuestion(state.quizCurrentIndex);
+}
+
+function showQuizResults() {
+  const correct = state.quizAnswers.filter(a => a.isCorrect).length;
+  const total = state.quizQuestions.length;
+  const pct = Math.round((correct / total) * 100);
+
+  $('pageQuizResult').querySelector('.quiz-result-card').innerHTML = `
+    <div class="result-score-circle" style="--score-pct: ${pct}%">
+      <div class="result-score-inner">
+        <div class="result-score-num">${pct}%</div>
+        <div class="result-score-label">${correct}/${total}</div>
+      </div>
+    </div>
+    <h3 style="margin-top:12px;font-size:1.1rem">${pct >= 70 ? 'Harika!' : pct >= 50 ? 'Fena Degil!' : 'Tekrar Dene!'}</h3>
+    <div class="result-stats">
+      <div class="result-stat">
+        <div class="result-stat-num correct">${correct}</div>
+        <div class="result-stat-label">Dogru</div>
+      </div>
+      <div class="result-stat">
+        <div class="result-stat-num wrong">${total - correct}</div>
+        <div class="result-stat-label">Yanlis</div>
+      </div>
+    </div>
+  `;
+
+  state.pageHistory = state.pageHistory.filter(p => p !== 'pageQuiz');
+  navigateTo('pageQuizResult', { isSubPage: true });
+}
+
+function retryQuiz() {
+  goBack();
+  if (state.sorularSubject) {
+    selectSoruSubject(state.sorularSubject.id);
+  }
+}
+
+function confirmQuizExit() {
+  if (state.quizAnswers.length > 0 && !state.quizCompleted) {
+    if (confirm('Sinavdan cikmak istediginize emin misiniz? Ilerlemeniz kaybolacak.')) {
+      goBack();
+    }
+  } else {
+    goBack();
+  }
+}
+
+// ==========================================
+// MODULE 14: AI SOR
+// ==========================================
+function switchAiTab(mode) {
+  state.aiInputMode = mode;
+  $('aiTabText').classList.toggle('active', mode === 'text');
+  $('aiTabPhoto').classList.toggle('active', mode === 'photo');
+  $('aiTextInput').classList.toggle('hidden', mode !== 'text');
+  $('aiPhotoInput').classList.toggle('hidden', mode !== 'photo');
+}
+
+function handlePhotoUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    $('aiPhotoPreview').src = e.target.result;
+    $('aiPhotoPreview').classList.remove('hidden');
+    $('aiPhotoUploadArea').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function updateAiRemaining() {
+  const remaining = CONFIG.AI_SOLUTIONS_PER_CREDIT - state.aiSolutionsUsed;
+  $('aiRemaining').textContent = `Kalan: ${remaining}/${CONFIG.AI_SOLUTIONS_PER_CREDIT} soru hakki (1 kredi)`;
+}
+
+async function handleAiSubmit() {
+  let questionText = '';
+  if (state.aiInputMode === 'text') {
+    questionText = $('aiQuestionText').value.trim();
+    if (!questionText) return showToast('Lutfen bir soru yazin.', 'error');
+  } else {
+    if ($('aiPhotoPreview').classList.contains('hidden')) return showToast('Lutfen bir fotograf yukleyin.', 'error');
+    questionText = '[Fotograf ile soru]';
+  }
+
+  // Check if new credit needed
+  if (state.aiSolutionsUsed >= CONFIG.AI_SOLUTIONS_PER_CREDIT) {
+    state.aiSolutionsUsed = 0;
+  }
+
+  if (state.aiSolutionsUsed === 0) {
+    const confirmed = await confirmCreditUsage(1, 'AI Sor - 5 Cozum');
+    if (!confirmed) return;
+    deductCredits(1, 'ai_sor', `AI Sor (5 cozum hakki)`);
+  }
+
+  const solution = await getMockAiSolution(questionText);
+  state.aiSolutionsUsed++;
+  updateAiRemaining();
+
+  // Add to history
+  state.aiHistory.unshift({ question: questionText, solution, timestamp: new Date().toISOString() });
+  renderAiHistory();
+
+  // Show solution
+  renderAiSolution(solution);
+  navigateTo('pageAiSonuc', { isSubPage: true });
+
+  // Clear input
+  $('aiQuestionText').value = '';
+  $('aiPhotoPreview').classList.add('hidden');
+  $('aiPhotoUploadArea').style.display = '';
+  $('aiPhotoFile').value = '';
+}
+
+function renderAiSolution(solution) {
+  $('aiSolutionContent').innerHTML = `
+    <div class="ai-solution-card">
+      ${solution.steps.map(s => `
+        <div class="ai-step">
+          <div class="ai-step-title">${s.title}</div>
+          <div class="ai-step-content">${s.content}</div>
+        </div>
+      `).join('')}
+      <div class="ai-final-answer">${solution.finalAnswer}</div>
+      ${solution.note ? `<p class="ai-note">${solution.note}</p>` : ''}
+    </div>
+  `;
+}
+
+function renderAiHistory() {
+  if (state.aiHistory.length === 0) return;
+  $('aiHistoryTitle').classList.remove('hidden');
+  $('aiHistoryList').innerHTML = state.aiHistory.slice(0, 10).map((item, i) => `
+    <div class="ai-history-item" onclick="showHistorySolution(${i})">
+      <div class="ai-history-q">${item.question}</div>
+      <div class="ai-history-time">${timeAgo(item.timestamp)}</div>
+    </div>
+  `).join('');
+}
+
+function showHistorySolution(index) {
+  const item = state.aiHistory[index];
+  if (!item) return;
+  renderAiSolution(item.solution);
+  navigateTo('pageAiSonuc', { isSubPage: true });
+}
+
+// ==========================================
+// MODULE 15: PROFILE
+// ==========================================
+function renderProfile() {
+  const user = state.user || {};
+  const name = user.name || 'Kullanici';
+  const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+  $('profileAvatar').textContent = initials;
+  $('profileName').textContent = name;
+  $('profileEmail').textContent = user.email || '';
+  $('profileCredits').textContent = state.credits;
+  $('profileStreak').textContent = state.streak;
+
+  // Usage history
+  const usageEl = $('profileUsageHistory');
+  if (state.usageHistory.length === 0) {
+    usageEl.innerHTML = '<div class="history-empty">Henuz kullanim yok</div>';
+  } else {
+    usageEl.innerHTML = state.usageHistory.slice(0, 20).map(item => `
+      <div class="history-item">
+        <div class="history-info">
+          <div class="history-desc">${item.description}</div>
+          <div class="history-date">${formatDate(item.date)}</div>
+        </div>
+        <div class="history-amount ${item.amount > 0 ? 'positive' : 'negative'}">${item.amount > 0 ? '+' : ''}${item.amount}</div>
+      </div>
+    `).join('');
+  }
+
+  // Payment history
+  const payEl = $('profilePaymentHistory');
+  if (state.paymentHistory.length === 0) {
+    payEl.innerHTML = '<div class="history-empty">Henuz odeme yok</div>';
+  } else {
+    payEl.innerHTML = state.paymentHistory.slice(0, 20).map(item => `
+      <div class="history-item">
+        <div class="history-info">
+          <div class="history-desc">${item.package} - ${item.credits} Kredi</div>
+          <div class="history-date">${formatDate(item.date)}</div>
+        </div>
+        <div class="history-amount positive">${item.price.toFixed(2)} TL</div>
+      </div>
+    `).join('');
+  }
+}
+
+// ==========================================
+// MODULE 16: MOCK AI SYSTEM
+// ==========================================
+async function mockAiDelay(minMs = 1000, maxMs = 2500) {
+  const delay = minMs + Math.random() * (maxMs - minMs);
+  return new Promise(resolve => setTimeout(resolve, delay));
+}
+
+async function getMockExplanation(topicId, topicName) {
+  showLoading('AI konu anlatimi hazirlaniyor...');
+  await mockAiDelay();
+  hideLoading();
+
+  const explanations = {
+    'tyt_mat_3': `**EBOB ve EKOK**
+
+**EBOB (En Buyuk Ortak Bolen):**
+Iki veya daha fazla sayinin ortak bolenlerinden en buyugune EBOB denir.
+
+**Nasil Bulunur:**
+1. Sayilari asal carpanlarina ayirin
+2. Ortak asal carpanlarin en kucuk kuvvetlerini carpin
+
+**Ornek:**
+24 = 2³ x 3
+36 = 2² x 3²
+EBOB(24, 36) = 2² x 3 = 12
+
+**EKOK (En Kucuk Ortak Kat):**
+Iki veya daha fazla sayinin ortak katlarindan en kucugune EKOK denir.
+
+**Nasil Bulunur:**
+1. Sayilari asal carpanlarina ayirin
+2. Tum asal carpanlarin en buyuk kuvvetlerini carpin
+
+**Ornek:**
+EKOK(24, 36) = 2³ x 3² = 72
+
+**Onemli Formul:**
+EBOB(a,b) x EKOK(a,b) = a x b`,
+
+    'tyt_mat_1': `**Temel Kavramlar ve Sayi Basamaklari**
+
+**Dogal Sayilar:** 0, 1, 2, 3, ... seklinde devam eden sayilardir.
+
+**Tam Sayilar:** ..., -3, -2, -1, 0, 1, 2, 3, ... seklinde negatif ve pozitif sayilari icerir.
+
+**Sayi Basamaklari:**
+Bir sayinin her bir rakaminin bulundugu konuma basamak denir.
+
+**Ornek: 3527 sayisi**
+- 7 → Birler basamagi (7 x 1 = 7)
+- 2 → Onlar basamagi (2 x 10 = 20)
+- 5 → Yuzler basamagi (5 x 100 = 500)
+- 3 → Binler basamagi (3 x 1000 = 3000)
+
+**Basamak Degeri:** Rakami bulundugu basamakla carpariz.
+**Sayi Degeri:** Rakamin kendisidir.
+
+**Onemli Formul:**
+n basamakli en buyuk sayi = 10^n - 1
+n basamakli en kucuk sayi = 10^(n-1)`,
+
+    'tyt_turkce_3': `**Paragraf Yorumlama**
+
+**Paragraf Nedir?**
+Bir dusunceyi, olayi veya durumu anlatan cumleler butunudur.
+
+**Paragrafin Ogeleri:**
+1. **Konu:** Paragrafta uzerinde durulan temel dusunce
+2. **Ana Dusunce:** Yazarin konuyla ilgili okuyucuya iletmek istedigi mesaj
+3. **Yardimci Dusunceler:** Ana dusunceyi destekleyen fikirler
+
+**Paragraf Sorularinda Dikkat Edilecekler:**
+- Once soruyu okuyun, ne istendigini anlayin
+- Paragrafi dikkatle okuyun
+- Ana dusunceyi bulmaya calisin
+- Secenekleri eleyerek dogru cevabi bulun
+
+**Soru Tipleri:**
+- Ana dusunce sorusu
+- Baslik sorusu
+- Paragrafin devami sorusu
+- Paragraftan cikarilabilecek yargilar`,
+
+    'tyt_fiz_3': `**Hareket ve Kuvvet**
+
+**Hareket:** Bir cismin konumunun zamana gore degismesidir.
+
+**Temel Kavramlar:**
+- **Yol:** Cismin gittigi toplam mesafe (skaler)
+- **Yer degistirme:** Baslangic ve bitis arasi dogrudan mesafe (vektorel)
+- **Hiz:** Yer degistirmenin zamana orani (v = x/t)
+- **Surat:** Yolun zamana orani
+
+**Duzgun Dogrusal Hareket (DDH):**
+Hizi sabit olan harekettir.
+x = v . t
+
+**Duzgun Ivmeli Hareket (DIH):**
+Ivmesi sabit olan harekettir.
+v = v₀ + a.t
+x = v₀.t + ½.a.t²
+v² = v₀² + 2.a.x
+
+**Newton'un Hareket Yasalari:**
+1. Yasa: Eylemsizlik (F=0 ise v=sabit)
+2. Yasa: F = m.a
+3. Yasa: Etki-tepki`
+  };
+
+  return explanations[topicId] || `**${topicName}**
+
+Bu konu hakkinda temel bilgiler:
+
+${topicName}, sinav mufredatinda onemli bir yere sahiptir. Bu konuyu iyi anlamak, ilgili sorulari cozebilmek icin temel olusturur.
+
+**Onemli Noktalar:**
+- Temel kavramlari iyi ogrenin
+- Bol soru cozun
+- Konu tekrari yapin
+- Sinav formatindaki sorulara aliksin
+
+**Not:** Bu ornek bir icerik olup, gercek AI entegrasyonunda cok daha detayli anlatim yapilacaktir. Kontrol edilmesi onerilir.`;
+}
+
+async function getMockDetailedExplanation(topicId, topicName) {
+  showLoading('Detayli anlatim hazirlaniyor...');
+  await mockAiDelay(800, 1500);
+  hideLoading();
+
+  const detailed = {
+    'tyt_mat_3': `**Ek Bilgiler ve Ileri Ornekler:**
+
+**3 Sayinin EBOB ve EKOK'u:**
+Ornek: EBOB(12, 18, 24)
+12 = 2² x 3
+18 = 2 x 3²
+24 = 2³ x 3
+EBOB = 2¹ x 3¹ = 6
+
+**Problem Tipleri:**
+1. "En fazla kac esit gruba ayrilir?" → EBOB sorusu
+2. "En az kacta birlikte calisirlar?" → EKOK sorusu
+3. "Bolum, kalan problemleri" → EBOB uygulamasi
+
+**Sinav Ipucu:**
+EBOB sorusu genelde "en buyuk", "en fazla" ifadelerini icerir.
+EKOK sorusu ise "en kucuk", "en az" ifadelerini icerir.
+
+**Ornek Soru:**
+24 elma, 36 armut ve 48 portakal var. Bunlar esit sayida meyve iceren en fazla kac sepete dagitilabilir?
+Cevap: EBOB(24, 36, 48) = 12 sepet`
+  };
+
+  return detailed[topicId] || `**${topicName} - Detayli Anlatim**
+
+**Ileri Duzey Bilgiler:**
+Bu konunun daha derin katmanlarinda, teorik altyapinin yaninda pratik uygulamalar da onem kazanir.
+
+**Sik Yapilan Hatalar:**
+- Temel kavramlari karistirmak
+- Formulleri ezberlemek yerine anlamadan kullanmak
+- Soru kokunu dikkatli okumamak
+
+**Sinav Stratejisi:**
+- Once kolay sorulari cozun
+- Zor sorulara sonra donun
+- Her soruya esit sure ayirmayin
+
+**Not:** Bu ornek detayli icerik olup, gercek AI entegrasyonunda cok daha kapsamli anlatim yapilacaktir.`;
+}
+
+async function getMockQuestions(topicId, topicName, count = 10) {
+  await mockAiDelay();
+
+  const questionBank = {
+    'tyt_mat_3': [
+      { text:'EBOB(48, 72) kactir?', options:['12','24','36','8','16'], correctIndex:1 },
+      { text:'EKOK(15, 20) kactir?', options:['30','45','60','120','300'], correctIndex:2 },
+      { text:'EBOB(a,b) x EKOK(a,b) = ? formulunde a=12, b=18 icin EKOK kactir?', options:['6','12','18','36','72'], correctIndex:3 },
+      { text:'Uc sayinin EBOB\'u 6 ise bu sayilardan biri asagidakilerden hangisi olamaz?', options:['12','18','24','36','20'], correctIndex:4 },
+      { text:'EKOK(8, 12, 16) kactir?', options:['24','48','96','192','32'], correctIndex:1 },
+      { text:'36 ve 48 sayilarinin EBOB\'u kactir?', options:['6','8','12','16','24'], correctIndex:2 },
+      { text:'Iki sayinin EBOB\'u 5, EKOK\'u 60 ise carpimi kactir?', options:['100','200','300','400','500'], correctIndex:2 },
+      { text:'EBOB(24, 36, 60) kactir?', options:['4','6','8','12','24'], correctIndex:3 },
+      { text:'EKOK(6, 8) + EBOB(6, 8) = ?', options:['24','26','28','30','32'], correctIndex:1 },
+      { text:'Bir sayinin 12 ve 18 ile tam bolunebilmesi icin en kucuk deger ne olmalidir?', options:['24','30','36','48','72'], correctIndex:2 }
+    ],
+    'tyt_mat_1': [
+      { text:'3 basamakli en buyuk cift sayi kactir?', options:['998','996','990','988','994'], correctIndex:0 },
+      { text:'4526 sayisindaki 5\'in basamak degeri kactir?', options:['5','50','500','5000','55'], correctIndex:2 },
+      { text:'Birler basamagi 7, onlar basamagi 3 olan en kucuk uc basamakli sayi kactir?', options:['137','237','337','037','173'], correctIndex:0 },
+      { text:'2 basamakli en buyuk asal sayi kactir?', options:['89','97','91','93','99'], correctIndex:1 },
+      { text:'0 ile 100 arasinda kac tane cift sayi vardir?', options:['49','50','51','48','52'], correctIndex:1 },
+      { text:'456 sayisindaki rakamlarin toplami kactir?', options:['12','13','14','15','16'], correctIndex:3 },
+      { text:'En kucuk dort basamakli sayi kactir?', options:['1000','1001','999','0001','1010'], correctIndex:0 },
+      { text:'Ard isik 3 tek sayinin toplami 27 ise en buyukleri kactir?', options:['7','9','11','13','15'], correctIndex:2 },
+      { text:'5! (5 faktoriyel) kactir?', options:['60','100','120','150','200'], correctIndex:2 },
+      { text:'12 sayisinin pozitif bolenleri toplami kactir?', options:['24','28','32','36','40'], correctIndex:1 }
+    ]
+  };
+
+  let questions = questionBank[topicId];
+  if (!questions || questions.length < count) {
+    questions = generateGenericQuestions(topicName, count);
+  } else {
+    questions = shuffleArray([...questions]).slice(0, count);
+  }
+
+  return questions.map((q, i) => ({ ...q, id: `q_${topicId}_${i}` }));
+}
+
+function generateGenericQuestions(topicName, count) {
+  const questions = [];
+  for (let i = 0; i < count; i++) {
+    questions.push({
+      text: `${topicName} ile ilgili ornek soru ${i + 1}: Asagidakilerden hangisi dogrudur?`,
+      options: [
+        `${topicName} ile ilgili A secenegi`,
+        `${topicName} ile ilgili B secenegi`,
+        `${topicName} ile ilgili C secenegi (Dogru)`,
+        `${topicName} ile ilgili D secenegi`,
+        `${topicName} ile ilgili E secenegi`
+      ],
+      correctIndex: 2
+    });
+  }
+  return questions;
+}
+
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+async function getMockAiSolution(questionText) {
+  showLoading('Cozum hazirlaniyor...');
+  await mockAiDelay(1500, 3000);
+  hideLoading();
+
+  return {
+    steps: [
+      { title: 'Adim 1: Soruyu Anlama', content: 'Once soruyu dikkatle okuyalim ve ne istendigini belirleyelim.' },
+      { title: 'Adim 2: Verilenleri Belirleme', content: 'Soruda verilen bilgileri listeleyelim ve bilinmeyenleri tanimlayalim.' },
+      { title: 'Adim 3: Cozum Yontemi', content: 'Bu tur sorularda uygulanacak en uygun yontemi belirleyelim.' },
+      { title: 'Adim 4: Islem Adimlari', content: 'Belirledigimiz yontemi adim adim uygulayalim. Her asamada islemleri dikkatle yapalim.' },
+      { title: 'Adim 5: Sonuc', content: 'Islemlerin sonucunda cevabi elde ettik.' }
+    ],
+    finalAnswer: 'Bu bir ornek cozumdur. Gercek AI entegrasyonunda sorunuza ozel detayli ve adim adim cozum sunulacaktir.',
+    note: 'Bu bir mock cozumdur. Kontrol edilmesi onerilir.'
+  };
+}
+
+// ==========================================
+// MODULE 17: UI UTILITIES
+// ==========================================
+let toastTimer = null;
+function showToast(msg, type = 'info') {
+  const toast = $('toast');
+  toast.textContent = msg;
+  toast.className = 'toast ' + type;
+  clearTimeout(toastTimer);
+  requestAnimationFrame(() => toast.classList.add('show'));
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function showModal(id) { $(id).classList.add('active'); }
+function hideModal(id) { $(id).classList.remove('active'); }
+function showLoading(text = 'Yukleniyor...') { $('loadingText').textContent = text; $('loadingOverlay').classList.add('active'); }
+function hideLoading() { $('loadingOverlay').classList.remove('active'); }
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  const months = ['Oca','Sub','Mar','Nis','May','Haz','Tem','Agu','Eyl','Eki','Kas','Ara'];
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}, ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+}
+
+function timeAgo(dateStr) {
+  const now = new Date();
+  const d = new Date(dateStr);
+  const diff = Math.floor((now - d) / 1000);
+  if (diff < 60) return 'Az once';
+  if (diff < 3600) return `${Math.floor(diff / 60)} dk once`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} saat once`;
+  return `${Math.floor(diff / 86400)} gun once`;
+}
+
+// ==========================================
+// MODULE 18: DATA PERSISTENCE
+// ==========================================
+function saveLocalState() {
+  const data = {
+    credits: state.credits,
+    streak: state.streak,
+    lastLoginDate: state.lastLoginDate,
+    motivationIndex: state.motivationIndex,
+    usageHistory: state.usageHistory.slice(0, 50),
+    paymentHistory: state.paymentHistory.slice(0, 50),
+    aiSolutionsUsed: state.aiSolutionsUsed
+  };
+  localStorage.setItem(CONFIG.STORAGE_PREFIX + 'state', JSON.stringify(data));
+}
+
+function loadLocalState() {
+  try {
+    const raw = localStorage.getItem(CONFIG.STORAGE_PREFIX + 'state');
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    state.credits = data.credits || 0;
+    state.streak = data.streak || 0;
+    state.lastLoginDate = data.lastLoginDate || null;
+    state.motivationIndex = data.motivationIndex || 0;
+    state.usageHistory = data.usageHistory || [];
+    state.paymentHistory = data.paymentHistory || [];
+    state.aiSolutionsUsed = data.aiSolutionsUsed || 0;
+  } catch(e) {}
+}
+
+// ==========================================
+// MODULE 19: INIT
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+  // Try auto-restore session
+  restoreSession();
+});
+
+// Service Worker Registration
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
