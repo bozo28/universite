@@ -85,6 +85,9 @@ ul { list-style: none; }
   padding-bottom: calc(var(--tab-bar-height) + var(--safe-bottom) + 20px);
   min-height: 100dvh;
   animation: fadeIn 0.3s var(--ease);
+  position: relative;
+  z-index: 1;
+  background: var(--bg);
 }
 .page.active { display: block; }
 .page.sub-page { animation: slideInRight 0.35s var(--ease); }
@@ -226,7 +229,7 @@ textarea.input-field { resize: vertical; min-height: 120px; }
    AUTH PAGE
    ========================================== */
 .auth-page {
-  display: flex;
+  display: none;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -234,7 +237,12 @@ textarea.input-field { resize: vertical; min-height: 120px; }
   padding-bottom: 40px;
   min-height: 100dvh;
   background: linear-gradient(180deg, var(--primary-lighter) 0%, var(--bg) 50%);
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 50;
+  overflow-y: auto;
 }
+.auth-page.active { display: flex; }
 .auth-logo {
   width: 80px;
   height: 80px;
@@ -902,7 +910,12 @@ textarea.input-field { resize: vertical; min-height: 120px; }
       <div class="input-group">
         <input type="password" class="input-field" id="loginPassword" placeholder="Sifre" required>
       </div>
-      <div class="auth-forgot" onclick="showAuthForm('forgot')">Sifremi Unuttum</div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <label style="display:flex;align-items:center;gap:6px;font-size:0.82rem;color:var(--text-secondary);cursor:pointer">
+          <input type="checkbox" id="rememberMe" style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer"> Beni Hatirla
+        </label>
+        <div class="auth-forgot" onclick="showAuthForm('forgot')">Sifremi Unuttum</div>
+      </div>
       <button type="submit" class="btn-primary" id="loginBtn" onclick="handleLogin()">Giris Yap</button>
       <div class="auth-switch">Hesabin yok mu? <a onclick="showAuthForm('register')">Kayit Ol</a></div>
     </form>
@@ -924,7 +937,7 @@ textarea.input-field { resize: vertical; min-height: 120px; }
 
     <!-- Forgot Password Form -->
     <form class="auth-form hidden" id="authForgotForm" onsubmit="return false">
-      <p style="font-size:0.85rem;color:var(--text-secondary);text-align:center;margin-bottom:8px;">Sifre sifirlama baglantisi gonderilecek.</p>
+      <p style="font-size:0.85rem;color:var(--text-secondary);text-align:center;margin-bottom:8px;">Sifre sifirlama baglantisi gonderilecek.<br><span style="font-size:0.78rem;color:var(--text-light)">Mail <strong>noreply@mail.app.supabase.io</strong> adresinden gelecektir. Spam klasorunu de kontrol edin.</span></p>
       <div class="input-group">
         <input type="email" class="input-field" id="forgotEmail" placeholder="E-posta adresi" required>
       </div>
@@ -937,7 +950,7 @@ textarea.input-field { resize: vertical; min-height: 120px; }
       <div class="auth-verify">
         <div class="auth-verify-icon">📧</div>
         <h3 style="margin-bottom:8px;">E-posta Dogrulama</h3>
-        <p class="auth-verify-text">Kayit basarili! Lutfen e-posta adresinizi kontrol edin ve dogrulama linkine tiklayin.</p>
+        <p class="auth-verify-text">Kayit basarili! Lutfen e-posta adresinizi kontrol edin ve dogrulama linkine tiklayin.<br><br><strong style="color:var(--primary)">noreply@mail.app.supabase.io</strong> adresinden bir mail gelecektir. Spam/gereksiz klasorunu de kontrol etmeyi unutmayin.</p>
         <button class="btn-secondary mt-16" onclick="showAuthForm('login')">Giris Ekranina Don</button>
       </div>
     </div>
@@ -985,7 +998,7 @@ textarea.input-field { resize: vertical; min-height: 120px; }
       <div class="action-card" onclick="switchTab('pageAiSor')">
         <div class="action-icon">🤖</div>
         <div class="action-title">AI'a Sor</div>
-        <div class="action-desc">Soru cozdir</div>
+        <div class="action-desc">Soru cozdur</div>
       </div>
       <div class="action-card" onclick="navigateTo('pageKrediSatinAl',{isSubPage:true})">
         <div class="action-icon">💎</div>
@@ -993,15 +1006,125 @@ textarea.input-field { resize: vertical; min-height: 120px; }
         <div class="action-desc">Paketler</div>
       </div>
     </div>
+
+    <div class="mt-20">
+      <div class="action-card" style="flex-direction:row;gap:14px;padding:16px" onclick="navigateTo('pageBilgi',{isSubPage:true})">
+        <div class="action-icon" style="background:#F3E8FF;width:40px;height:40px;font-size:1.1rem">📋</div>
+        <div style="flex:1">
+          <div class="action-title" style="text-align:left;font-size:0.9rem">Kullanim Sartlari & Bilgi</div>
+          <div class="action-desc" style="text-align:left">Kredi sistemi, kurallar, iletisim</div>
+        </div>
+        <div class="subject-chevron"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:var(--text-light);fill:none;stroke-width:2"><path d="M9 18l6-6-6-6"/></svg></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       BILGI / KULLANIM SARTLARI PAGE
+       ========================================== -->
+  <section class="page sub-page" id="pageBilgi">
+    <div class="sub-page-header">
+      <button class="back-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <h2>Bilgi & Kullanim Sartlari</h2>
+    </div>
+
+    <!-- Kredi Sistemi -->
+    <div class="card mb-16">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px;color:var(--primary)">💰 Kredi Sistemi</h3>
+      <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;margin-bottom:12px">Uygulama kredi sistemiyle calisir. Her islem belirli miktarda kredi harcar. Abonelik yoktur, kredi bittikce satin alinir.</p>
+      <table style="width:100%;font-size:0.82rem;border-collapse:collapse">
+        <tr style="background:var(--primary-light)">
+          <th style="padding:10px 12px;text-align:left;border-radius:8px 0 0 0;font-weight:600">Hizmet</th>
+          <th style="padding:10px 12px;text-align:center;border-radius:0 8px 0 0;font-weight:600">Kredi</th>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px 12px">Konu Anlatimi (AI)</td>
+          <td style="padding:10px 12px;text-align:center;font-weight:600;color:var(--primary)">1</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px 12px">Daha Detayli Anlatim</td>
+          <td style="padding:10px 12px;text-align:center;font-weight:600;color:var(--primary)">+1</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px 12px">Soru Bankasi (10 Soru)</td>
+          <td style="padding:10px 12px;text-align:center;font-weight:600;color:var(--primary)">1</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px 12px">AI Soru Cozumu (5 Soru)</td>
+          <td style="padding:10px 12px;text-align:center;font-weight:600;color:var(--primary)">1</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px;color:var(--success)">Kayit Bonusu</td>
+          <td style="padding:10px 12px;text-align:center;font-weight:600;color:var(--success)">+5</td>
+        </tr>
+      </table>
+      <p style="font-size:0.78rem;color:var(--text-light);margin-top:10px">* Her islem oncesi kredi onay ekrani gosterilir.</p>
+    </div>
+
+    <!-- Kullanim Sartlari -->
+    <div class="card mb-16">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px;color:var(--primary)">📜 Kullanim Sartlari</h3>
+      <div style="font-size:0.85rem;color:var(--text-secondary);line-height:1.7">
+        <p style="margin-bottom:10px"><strong>Hizmet Tanimi:</strong> UniHazirlik, universite sinavlarina (TYT-AYT) hazirlanan ogrenciler icin gelistirilmis, yapay zeka destekli bir egitim uygulamasidir.</p>
+        <p style="margin-bottom:10px"><strong>Kullanici Sorumlulugu:</strong></p>
+        <ul style="padding-left:18px;margin-bottom:10px">
+          <li>Hesap bilgilerinizin guvenligi sizin sorumlulugunuzdadir.</li>
+          <li>Uygulamayi kisisel egitim amaciyla kullanin.</li>
+          <li>Sistemi kotuye kullanmaya calismak hesap askiya alinmasina neden olabilir.</li>
+          <li>Uygun olmayan veya yasadisi icerik paylasmayin.</li>
+        </ul>
+        <p style="margin-bottom:10px"><strong>AI Icerigi:</strong> Yapay zeka tarafindan uretilen icerikler bilgilendirme amaclidir. Icerik dogrulugu garanti edilmez. Onemli konularda kontrol edilmesi onerilir.</p>
+        <p style="margin-bottom:10px"><strong>Kredi Politikasi:</strong></p>
+        <ul style="padding-left:18px;margin-bottom:10px">
+          <li>Satin alinan krediler iade edilmez.</li>
+          <li>Kredilerin bir son kullanim tarihi yoktur.</li>
+          <li>Teknik hata durumunda krediler iade edilir.</li>
+        </ul>
+        <p style="margin-bottom:10px"><strong>Hizmet Garantisi:</strong> Uygulama "oldugu gibi" sunulmaktadir. Kesintisiz veya hatasiz calisma garantisi verilmez.</p>
+        <p><strong>Hesap Silme:</strong> Kullanicilar hesaplarinin ve verilerinin silinmesini talep edebilir.</p>
+      </div>
+    </div>
+
+    <!-- Gizlilik -->
+    <div class="card mb-16">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px;color:var(--primary)">🔒 Gizlilik Politikasi</h3>
+      <div style="font-size:0.85rem;color:var(--text-secondary);line-height:1.7">
+        <p style="margin-bottom:10px"><strong>Toplanan Bilgiler:</strong></p>
+        <ul style="padding-left:18px;margin-bottom:10px">
+          <li>E-posta adresi ve ad soyad</li>
+          <li>Uygulama kullanim verileri</li>
+          <li>AI sorularinda yuklenen fotograflar (gecici olarak islenir, kalici saklanmaz)</li>
+        </ul>
+        <p style="margin-bottom:10px"><strong>Veri Kullanimi:</strong> Verileriniz yalnizca hizmeti sunmak, uygulamayi gelistirmek ve guvenligi saglamak icin kullanilir.</p>
+        <p style="margin-bottom:10px"><strong>Ucuncu Taraf Hizmetleri:</strong> Uygulama altyapisinda bulut sunucu, AI API ve odeme sistemleri kullanilmaktadir.</p>
+        <p><strong>Veri Guvenligi:</strong> Kullanici verileri guvenli ortamda saklanir ve korunur.</p>
+      </div>
+    </div>
+
+    <!-- Iletisim -->
+    <div class="card mb-16">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px;color:var(--primary)">📧 Iletisim & Destek</h3>
+      <div style="font-size:0.85rem;color:var(--text-secondary);line-height:1.7">
+        <p style="margin-bottom:10px">Soru, sorun veya geri bildirimleriniz icin bize ulasin.</p>
+        <p style="margin-bottom:6px"><strong>E-posta:</strong> destek@unihazirlik.com</p>
+        <p>Mesajlariniza 24-48 saat icinde donus yapilmaktadir.</p>
+      </div>
+    </div>
+
+    <p style="text-align:center;font-size:0.75rem;color:var(--text-light);margin-bottom:20px">Son guncelleme: Mart 2026</p>
   </section>
 
   <!-- ==========================================
        KONULAR PAGE
        ========================================== -->
   <section class="page" id="pageKonular">
-    <div class="page-header">
-      <h1>Konu Anlatimi</h1>
-      <p>Ders ve konu secin, AI ile ogrenin</p>
+    <div class="sub-page-header">
+      <button class="back-btn" onclick="switchTab('pageDashboard')">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <h2>Konu Anlatimi</h2>
     </div>
     <div class="exam-type-selector" id="konularExamType">
       <button class="exam-type-btn active" onclick="setExamType('konular','tyt')">TYT</button>
@@ -1037,9 +1160,11 @@ textarea.input-field { resize: vertical; min-height: 120px; }
        SORULAR PAGE
        ========================================== -->
   <section class="page" id="pageSorular">
-    <div class="page-header">
-      <h1>Soru Bankasi</h1>
-      <p>Ders secin ve test cozun</p>
+    <div class="sub-page-header">
+      <button class="back-btn" onclick="switchTab('pageDashboard')">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <h2>Soru Bankasi</h2>
     </div>
     <div class="exam-type-selector" id="sorularExamType">
       <button class="exam-type-btn active" onclick="setExamType('sorular','tyt')">TYT</button>
@@ -1092,9 +1217,11 @@ textarea.input-field { resize: vertical; min-height: 120px; }
        AI SOR PAGE
        ========================================== -->
   <section class="page" id="pageAiSor">
-    <div class="page-header">
-      <h1>AI'a Sor</h1>
-      <p>Sorunuzu yazin veya fotograf yukleyin</p>
+    <div class="sub-page-header">
+      <button class="back-btn" onclick="switchTab('pageDashboard')">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <h2>Soru Cozdur</h2>
     </div>
     <div class="ai-remaining" id="aiRemaining">Kalan: 5/5 soru hakkı (1 kredi)</div>
     <div class="ai-tabs">
@@ -1136,8 +1263,11 @@ textarea.input-field { resize: vertical; min-height: 120px; }
        PROFIL PAGE
        ========================================== -->
   <section class="page" id="pageProfil">
-    <div class="page-header">
-      <h1>Profil</h1>
+    <div class="sub-page-header">
+      <button class="back-btn" onclick="switchTab('pageDashboard')">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <h2>Profil</h2>
     </div>
     <div class="profile-avatar" id="profileAvatar">U</div>
     <div class="profile-name" id="profileName">Kullanici</div>
@@ -1208,7 +1338,7 @@ textarea.input-field { resize: vertical; min-height: 120px; }
     </button>
     <button class="tab-item" data-page="pageAiSor" onclick="switchTab('pageAiSor')">
       <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-      <span>AI Sor</span>
+      <span>Soru Cozdur</span><!-- AI Sor tab -->
     </button>
     <button class="tab-item" data-page="pageProfil" onclick="switchTab('pageProfil')">
       <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -1258,8 +1388,8 @@ textarea.input-field { resize: vertical; min-height: 120px; }
 // MODULE 1: CONFIGURATION
 // ==========================================
 const CONFIG = {
-  SUPABASE_URL: 'https://YOUR_PROJECT.supabase.co',
-  SUPABASE_ANON_KEY: 'YOUR_ANON_KEY',
+  SUPABASE_URL: 'https://edzuohkrhnftlqzcvtro.supabase.co',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkenVvaGtyaG5mdGxxemN2dHJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMjYzNzgsImV4cCI6MjA4OTYwMjM3OH0.fSSomM6i2X5EJ7gVEWyNqt3J4HLyRCyaXXFRgrkQQM4',
   STORAGE_PREFIX: 'unihazirlik_',
   CREDIT_COSTS: { KONU_ANLATIM: 1, KONU_DETAYLI: 1, SORU_BANKASI: 1, AI_SOR: 1 },
   AI_SOLUTIONS_PER_CREDIT: 5,
@@ -1426,6 +1556,7 @@ function goBack() {
 }
 
 function switchTab(pageId) {
+  if (pageId === state.currentPage) return;
   state.pageHistory = [];
   const mainPages = ['pageDashboard','pageKonular','pageSorular','pageAiSor','pageProfil'];
   mainPages.forEach(p => { const el = $(p); if(el) { el.classList.remove('active'); el.classList.remove('sub-page'); } });
@@ -1467,12 +1598,32 @@ async function handleLogin() {
   $('loginBtn').disabled = true;
   try {
     const data = await sbAuth.signIn(email, password);
+    // Beni Hatirla
+    if ($('rememberMe').checked) {
+      localStorage.setItem(CONFIG.STORAGE_PREFIX + 'saved_email', email);
+      localStorage.setItem(CONFIG.STORAGE_PREFIX + 'saved_pass', btoa(password));
+      localStorage.setItem(CONFIG.STORAGE_PREFIX + 'remember', '1');
+    } else {
+      localStorage.removeItem(CONFIG.STORAGE_PREFIX + 'saved_email');
+      localStorage.removeItem(CONFIG.STORAGE_PREFIX + 'saved_pass');
+      localStorage.removeItem(CONFIG.STORAGE_PREFIX + 'remember');
+    }
     const user = { id: data.user.id, email: data.user.email, name: data.user.user_metadata?.name || '' };
     setLoggedIn(user);
   } catch(e) {
     showAuthError(e.message);
   }
   $('loginBtn').disabled = false;
+}
+
+function loadRememberedCredentials() {
+  if (localStorage.getItem(CONFIG.STORAGE_PREFIX + 'remember') === '1') {
+    const email = localStorage.getItem(CONFIG.STORAGE_PREFIX + 'saved_email');
+    const pass = localStorage.getItem(CONFIG.STORAGE_PREFIX + 'saved_pass');
+    if (email) $('loginEmail').value = email;
+    if (pass) { try { $('loginPassword').value = atob(pass); } catch(e){} }
+    $('rememberMe').checked = true;
+  }
 }
 
 async function handleRegister() {
@@ -2602,7 +2753,7 @@ function loadLocalState() {
 // MODULE 19: INIT
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-  // Try auto-restore session
+  loadRememberedCredentials();
   restoreSession();
 });
 
