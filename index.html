@@ -1045,19 +1045,19 @@ textarea.input-field { resize: vertical; min-height: 120px; }
         </tr>
         <tr style="border-bottom:1px solid var(--border)">
           <td style="padding:10px 12px">Daha Detayli Anlatim</td>
-          <td style="padding:10px 12px;text-align:center;font-weight:600;color:var(--primary)">+1</td>
+          <td style="padding:10px 12px;text-align:center;font-weight:600;color:var(--primary)">+3</td>
         </tr>
         <tr style="border-bottom:1px solid var(--border)">
           <td style="padding:10px 12px">Soru Bankasi (10 Soru)</td>
           <td style="padding:10px 12px;text-align:center;font-weight:600;color:var(--primary)">1</td>
         </tr>
         <tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:10px 12px">AI Soru Cozumu (5 Soru)</td>
+          <td style="padding:10px 12px">AI Soru Cozumu (2 Soru)</td>
           <td style="padding:10px 12px;text-align:center;font-weight:600;color:var(--primary)">1</td>
         </tr>
         <tr>
           <td style="padding:10px 12px;color:var(--success)">Kayit Bonusu</td>
-          <td style="padding:10px 12px;text-align:center;font-weight:600;color:var(--success)">+5</td>
+          <td style="padding:10px 12px;text-align:center;font-weight:600;color:var(--success)">+3</td>
         </tr>
       </table>
       <p style="font-size:0.78rem;color:var(--text-light);margin-top:10px">* Her islem oncesi kredi onay ekrani gosterilir.</p>
@@ -1151,7 +1151,7 @@ textarea.input-field { resize: vertical; min-height: 120px; }
       </div>
       <div class="konu-text hidden" id="konuText"></div>
       <div class="konu-actions hidden" id="konuActions">
-        <button class="btn-secondary" onclick="handleDetayliAnlat()">Daha Detayli Anlat (+1 Kredi)</button>
+        <button class="btn-secondary" onclick="handleDetayliAnlat()">Daha Detayli Anlat (+3 Kredi)</button>
       </div>
     </div>
   </section>
@@ -1223,7 +1223,7 @@ textarea.input-field { resize: vertical; min-height: 120px; }
       </button>
       <h2>Soru Cozdur</h2>
     </div>
-    <div class="ai-remaining" id="aiRemaining">Kalan: 5/5 soru hakkı (1 kredi)</div>
+    <div class="ai-remaining" id="aiRemaining">Kalan: 2/2 soru hakki (1 kredi)</div>
     <div class="ai-tabs">
       <button class="ai-tab active" id="aiTabText" onclick="switchAiTab('text')">Soru Yaz</button>
       <button class="ai-tab" id="aiTabPhoto" onclick="switchAiTab('photo')">Fotograf Yukle</button>
@@ -1388,13 +1388,14 @@ textarea.input-field { resize: vertical; min-height: 120px; }
 // MODULE 1: CONFIGURATION
 // ==========================================
 const CONFIG = {
+  WORKER_URL: 'https://unihazirlik-worker.bburhan272.workers.dev',
   SUPABASE_URL: 'https://edzuohkrhnftlqzcvtro.supabase.co',
   SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkenVvaGtyaG5mdGxxemN2dHJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMjYzNzgsImV4cCI6MjA4OTYwMjM3OH0.fSSomM6i2X5EJ7gVEWyNqt3J4HLyRCyaXXFRgrkQQM4',
   STORAGE_PREFIX: 'unihazirlik_',
   CREDIT_COSTS: { KONU_ANLATIM: 1, KONU_DETAYLI: 1, SORU_BANKASI: 1, AI_SOR: 1 },
-  AI_SOLUTIONS_PER_CREDIT: 5,
+  AI_SOLUTIONS_PER_CREDIT: 2,
   QUESTIONS_PER_CREDIT: 10,
-  INITIAL_CREDITS: 5
+  INITIAL_CREDITS: 3
 };
 
 // ==========================================
@@ -1509,6 +1510,13 @@ function navigateTo(pageId, options = {}) {
   if (current) {
     current.classList.remove('active');
     current.classList.remove('sub-page');
+    // AI sayfasindan ayrilirken gorseli temizle
+    if (state.currentPage === 'pageAiSor' && pageId !== 'pageAiSonuc') {
+      $('aiPhotoPreview').src = '';
+      $('aiPhotoPreview').classList.add('hidden');
+      $('aiPhotoUploadArea').style.display = '';
+      $('aiPhotoFile').value = '';
+    }
   }
 
   if (isSubPage && !skipHistory) {
@@ -1654,13 +1662,26 @@ async function handleForgotPassword() {
   }
 }
 
-function setLoggedIn(user) {
+async function setLoggedIn(user) {
   state.user = user;
   loadLocalState();
+  // Fetch credits from database (source of truth)
+  try {
+    const token = localStorage.getItem(CONFIG.STORAGE_PREFIX + 'token');
+    const res = await fetch(CONFIG.SUPABASE_URL + '/rest/v1/profiles?id=eq.' + user.id + '&select=credits', {
+      headers: { 'apikey': CONFIG.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) {
+      const rows = await res.json();
+      if (rows.length > 0 && rows[0].credits !== undefined) {
+        state.credits = rows[0].credits;
+      }
+    }
+  } catch(e) { /* fallback to localStorage credits */ }
   if (state.credits === 0 && state.usageHistory.length === 0 && state.paymentHistory.length === 0) {
     state.credits = CONFIG.INITIAL_CREDITS;
-    saveLocalState();
   }
+  saveLocalState();
   checkAndUpdateStreak();
   $('pageAuth').classList.remove('active');
   showBottomBar(true);
@@ -1864,11 +1885,23 @@ function resolveCredit(val) {
   if (creditResolve) { creditResolve(val); creditResolve = null; }
 }
 
+function syncCreditsToDb() {
+  if (!state.user) return;
+  const token = localStorage.getItem(CONFIG.STORAGE_PREFIX + 'token');
+  if (!token) return;
+  fetch(CONFIG.SUPABASE_URL + '/rest/v1/profiles?id=eq.' + state.user.id, {
+    method: 'PATCH',
+    headers: { 'apikey': CONFIG.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ credits: state.credits })
+  }).catch(() => {});
+}
+
 function deductCredits(amount, type, description) {
   state.credits -= amount;
   state.usageHistory.unshift({ type, amount: -amount, description, date: new Date().toISOString() });
   saveLocalState();
   updateCreditsUI();
+  syncCreditsToDb();
 }
 
 function addCredits(amount, packageName, price) {
@@ -1877,6 +1910,7 @@ function addCredits(amount, packageName, price) {
   state.usageHistory.unshift({ type: 'purchase', amount: amount, description: `${packageName} paketi`, date: new Date().toISOString() });
   saveLocalState();
   updateCreditsUI();
+  syncCreditsToDb();
   showToast(`${amount} kredi eklendi!`, 'success');
 }
 
@@ -1887,10 +1921,9 @@ function updateCreditsUI() {
 }
 
 const CREDIT_PACKAGES = [
-  { id: 'starter', name: 'Baslangic', credits: 10, price: 29.99 },
-  { id: 'standard', name: 'Standart', credits: 30, price: 69.99, popular: true },
-  { id: 'premium', name: 'Premium', credits: 75, price: 149.99 },
-  { id: 'mega', name: 'Mega', credits: 200, price: 349.99 }
+  { id: 'starter', name: 'Baslangic', credits: 10, price: 179 },
+  { id: 'standard', name: 'Standart', credits: 30, price: 499, popular: true },
+  { id: 'premium', name: 'Premium', credits: 75, price: 1149 }
 ];
 
 function renderCreditPackages() {
@@ -2046,13 +2079,17 @@ function selectTopic(topicId) {
   state.selectedTopic = topicId;
 }
 
+let _aiLock = false;
 async function handleKonuAnlat(topicId) {
+  if (_aiLock) return;
+  _aiLock = true;
+  try {
   selectTopic(topicId);
   const topic = state.selectedSubject.topics.find(t => t.id === topicId);
-  if (!topic) return;
+  if (!topic) { _aiLock = false; return; }
 
   const confirmed = await confirmCreditUsage(1, 'Konu Anlatimi');
-  if (!confirmed) return;
+  if (!confirmed) { _aiLock = false; return; }
 
   deductCredits(1, 'konu_anlatim', `${state.selectedSubject.name} - ${topic.name}`);
 
@@ -2066,23 +2103,28 @@ async function handleKonuAnlat(topicId) {
   $('konuActions').classList.remove('hidden');
 
   $('konuContentArea').scrollIntoView({ behavior: 'smooth' });
+  } finally { _aiLock = false; }
 }
 
 async function handleDetayliAnlat() {
+  if (_aiLock) return;
   if (state.konuDetailedUsed) return showToast('Bu konu icin detayli anlatim zaten kullanildi.', 'info');
+  _aiLock = true;
+  try {
   const topic = state.selectedSubject?.topics.find(t => t.id === state.selectedTopic);
-  if (!topic) return;
+  if (!topic) { _aiLock = false; return; }
 
-  const confirmed = await confirmCreditUsage(1, 'Detayli Konu Anlatimi');
-  if (!confirmed) return;
+  const confirmed = await confirmCreditUsage(3, 'Detayli Konu Anlatimi');
+  if (!confirmed) { _aiLock = false; return; }
 
-  deductCredits(1, 'konu_detayli', `${state.selectedSubject.name} - ${topic.name} (Detayli)`);
+  deductCredits(3, 'konu_detayli', `${state.selectedSubject.name} - ${topic.name} (Detayli)`);
 
   const detailed = await getMockDetailedExplanation(state.selectedTopic, topic.name);
   state.konuDetailedUsed = true;
 
   $('konuText').innerHTML += '<hr style="margin:20px 0;border:none;border-top:2px solid var(--primary-light)">' + formatExplanation(detailed);
   $('konuActions').classList.add('hidden');
+  } finally { _aiLock = false; }
 }
 
 function formatExplanation(text) {
@@ -2127,18 +2169,19 @@ function startTopicSelection(subject) {
 }
 
 async function startQuiz(topicId) {
+  if (_aiLock) return;
+  _aiLock = true;
+  try {
   const subject = state.sorularSubject;
   const topic = subject.topics.find(t => t.id === topicId);
-  if (!topic) return;
+  if (!topic) { _aiLock = false; return; }
 
   const confirmed = await confirmCreditUsage(1, `Soru Bankasi - ${topic.name}`);
-  if (!confirmed) return;
+  if (!confirmed) { _aiLock = false; return; }
 
   deductCredits(1, 'soru_bankasi', `${subject.name} - ${topic.name} (10 Soru)`);
 
-  showLoading('Sorular hazirlaniyor...');
   const questions = await getMockQuestions(topicId, topic.name);
-  hideLoading();
 
   state.quizQuestions = questions;
   state.quizCurrentIndex = 0;
@@ -2167,6 +2210,7 @@ async function startQuiz(topicId) {
   `;
 
   renderQuestion(0);
+  } finally { _aiLock = false; }
 }
 
 function renderQuestion(index) {
@@ -2308,13 +2352,18 @@ function updateAiRemaining() {
 }
 
 async function handleAiSubmit() {
+  if (_aiLock) return;
+  _aiLock = true;
+  try {
   let questionText = '';
+  let imageUrl = null;
   if (state.aiInputMode === 'text') {
     questionText = $('aiQuestionText').value.trim();
     if (!questionText) return showToast('Lutfen bir soru yazin.', 'error');
   } else {
     if ($('aiPhotoPreview').classList.contains('hidden')) return showToast('Lutfen bir fotograf yukleyin.', 'error');
-    questionText = '[Fotograf ile soru]';
+    questionText = $('aiQuestionText').value.trim() || '';
+    imageUrl = $('aiPhotoPreview').src;
   }
 
   // Check if new credit needed
@@ -2323,12 +2372,12 @@ async function handleAiSubmit() {
   }
 
   if (state.aiSolutionsUsed === 0) {
-    const confirmed = await confirmCreditUsage(1, 'AI Sor - 5 Cozum');
+    const confirmed = await confirmCreditUsage(1, 'AI Sor - 2 Cozum');
     if (!confirmed) return;
-    deductCredits(1, 'ai_sor', `AI Sor (5 cozum hakki)`);
+    deductCredits(1, 'ai_sor', `AI Sor (2 cozum hakki)`);
   }
 
-  const solution = await getMockAiSolution(questionText);
+  const solution = await getMockAiSolution(questionText, imageUrl);
   state.aiSolutionsUsed++;
   updateAiRemaining();
 
@@ -2342,9 +2391,7 @@ async function handleAiSubmit() {
 
   // Clear input
   $('aiQuestionText').value = '';
-  $('aiPhotoPreview').classList.add('hidden');
-  $('aiPhotoUploadArea').style.display = '';
-  $('aiPhotoFile').value = '';
+  } finally { _aiLock = false; }
 }
 
 function renderAiSolution(solution) {
@@ -2428,234 +2475,68 @@ function renderProfile() {
 }
 
 // ==========================================
-// MODULE 16: MOCK AI SYSTEM
+// MODULE 16: AI API (Cloudflare Worker)
 // ==========================================
-async function mockAiDelay(minMs = 1000, maxMs = 2500) {
-  const delay = minMs + Math.random() * (maxMs - minMs);
-  return new Promise(resolve => setTimeout(resolve, delay));
+function getAuthToken() {
+  return localStorage.getItem(CONFIG.STORAGE_PREFIX + 'token') || '';
+}
+
+async function callWorkerAPI(endpoint, body) {
+  const res = await fetch(CONFIG.WORKER_URL + endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + getAuthToken()
+    },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Sunucu hatasi' }));
+    throw new Error(err.error || 'Istek basarisiz');
+  }
+  return await res.json();
 }
 
 async function getMockExplanation(topicId, topicName) {
   showLoading('AI konu anlatimi hazirlaniyor...');
-  await mockAiDelay();
-  hideLoading();
-
-  const explanations = {
-    'tyt_mat_3': `**EBOB ve EKOK**
-
-**EBOB (En Buyuk Ortak Bolen):**
-Iki veya daha fazla sayinin ortak bolenlerinden en buyugune EBOB denir.
-
-**Nasil Bulunur:**
-1. Sayilari asal carpanlarina ayirin
-2. Ortak asal carpanlarin en kucuk kuvvetlerini carpin
-
-**Ornek:**
-24 = 2³ x 3
-36 = 2² x 3²
-EBOB(24, 36) = 2² x 3 = 12
-
-**EKOK (En Kucuk Ortak Kat):**
-Iki veya daha fazla sayinin ortak katlarindan en kucugune EKOK denir.
-
-**Nasil Bulunur:**
-1. Sayilari asal carpanlarina ayirin
-2. Tum asal carpanlarin en buyuk kuvvetlerini carpin
-
-**Ornek:**
-EKOK(24, 36) = 2³ x 3² = 72
-
-**Onemli Formul:**
-EBOB(a,b) x EKOK(a,b) = a x b`,
-
-    'tyt_mat_1': `**Temel Kavramlar ve Sayi Basamaklari**
-
-**Dogal Sayilar:** 0, 1, 2, 3, ... seklinde devam eden sayilardir.
-
-**Tam Sayilar:** ..., -3, -2, -1, 0, 1, 2, 3, ... seklinde negatif ve pozitif sayilari icerir.
-
-**Sayi Basamaklari:**
-Bir sayinin her bir rakaminin bulundugu konuma basamak denir.
-
-**Ornek: 3527 sayisi**
-- 7 → Birler basamagi (7 x 1 = 7)
-- 2 → Onlar basamagi (2 x 10 = 20)
-- 5 → Yuzler basamagi (5 x 100 = 500)
-- 3 → Binler basamagi (3 x 1000 = 3000)
-
-**Basamak Degeri:** Rakami bulundugu basamakla carpariz.
-**Sayi Degeri:** Rakamin kendisidir.
-
-**Onemli Formul:**
-n basamakli en buyuk sayi = 10^n - 1
-n basamakli en kucuk sayi = 10^(n-1)`,
-
-    'tyt_turkce_3': `**Paragraf Yorumlama**
-
-**Paragraf Nedir?**
-Bir dusunceyi, olayi veya durumu anlatan cumleler butunudur.
-
-**Paragrafin Ogeleri:**
-1. **Konu:** Paragrafta uzerinde durulan temel dusunce
-2. **Ana Dusunce:** Yazarin konuyla ilgili okuyucuya iletmek istedigi mesaj
-3. **Yardimci Dusunceler:** Ana dusunceyi destekleyen fikirler
-
-**Paragraf Sorularinda Dikkat Edilecekler:**
-- Once soruyu okuyun, ne istendigini anlayin
-- Paragrafi dikkatle okuyun
-- Ana dusunceyi bulmaya calisin
-- Secenekleri eleyerek dogru cevabi bulun
-
-**Soru Tipleri:**
-- Ana dusunce sorusu
-- Baslik sorusu
-- Paragrafin devami sorusu
-- Paragraftan cikarilabilecek yargilar`,
-
-    'tyt_fiz_3': `**Hareket ve Kuvvet**
-
-**Hareket:** Bir cismin konumunun zamana gore degismesidir.
-
-**Temel Kavramlar:**
-- **Yol:** Cismin gittigi toplam mesafe (skaler)
-- **Yer degistirme:** Baslangic ve bitis arasi dogrudan mesafe (vektorel)
-- **Hiz:** Yer degistirmenin zamana orani (v = x/t)
-- **Surat:** Yolun zamana orani
-
-**Duzgun Dogrusal Hareket (DDH):**
-Hizi sabit olan harekettir.
-x = v . t
-
-**Duzgun Ivmeli Hareket (DIH):**
-Ivmesi sabit olan harekettir.
-v = v₀ + a.t
-x = v₀.t + ½.a.t²
-v² = v₀² + 2.a.x
-
-**Newton'un Hareket Yasalari:**
-1. Yasa: Eylemsizlik (F=0 ise v=sabit)
-2. Yasa: F = m.a
-3. Yasa: Etki-tepki`
-  };
-
-  return explanations[topicId] || `**${topicName}**
-
-Bu konu hakkinda temel bilgiler:
-
-${topicName}, sinav mufredatinda onemli bir yere sahiptir. Bu konuyu iyi anlamak, ilgili sorulari cozebilmek icin temel olusturur.
-
-**Onemli Noktalar:**
-- Temel kavramlari iyi ogrenin
-- Bol soru cozun
-- Konu tekrari yapin
-- Sinav formatindaki sorulara aliksin
-
-**Not:** Bu ornek bir icerik olup, gercek AI entegrasyonunda cok daha detayli anlatim yapilacaktir. Kontrol edilmesi onerilir.`;
+  try {
+    const subjectName = state.selectedSubject?.name || '';
+    const data = await callWorkerAPI('/api/konu-anlatim', { subjectName, topicName, detailed: false });
+    hideLoading();
+    return data.explanation;
+  } catch(e) {
+    hideLoading();
+    showToast('Konu anlatimi alinamadi: ' + e.message, 'error');
+    throw e;
+  }
 }
 
 async function getMockDetailedExplanation(topicId, topicName) {
   showLoading('Detayli anlatim hazirlaniyor...');
-  await mockAiDelay(800, 1500);
-  hideLoading();
-
-  const detailed = {
-    'tyt_mat_3': `**Ek Bilgiler ve Ileri Ornekler:**
-
-**3 Sayinin EBOB ve EKOK'u:**
-Ornek: EBOB(12, 18, 24)
-12 = 2² x 3
-18 = 2 x 3²
-24 = 2³ x 3
-EBOB = 2¹ x 3¹ = 6
-
-**Problem Tipleri:**
-1. "En fazla kac esit gruba ayrilir?" → EBOB sorusu
-2. "En az kacta birlikte calisirlar?" → EKOK sorusu
-3. "Bolum, kalan problemleri" → EBOB uygulamasi
-
-**Sinav Ipucu:**
-EBOB sorusu genelde "en buyuk", "en fazla" ifadelerini icerir.
-EKOK sorusu ise "en kucuk", "en az" ifadelerini icerir.
-
-**Ornek Soru:**
-24 elma, 36 armut ve 48 portakal var. Bunlar esit sayida meyve iceren en fazla kac sepete dagitilabilir?
-Cevap: EBOB(24, 36, 48) = 12 sepet`
-  };
-
-  return detailed[topicId] || `**${topicName} - Detayli Anlatim**
-
-**Ileri Duzey Bilgiler:**
-Bu konunun daha derin katmanlarinda, teorik altyapinin yaninda pratik uygulamalar da onem kazanir.
-
-**Sik Yapilan Hatalar:**
-- Temel kavramlari karistirmak
-- Formulleri ezberlemek yerine anlamadan kullanmak
-- Soru kokunu dikkatli okumamak
-
-**Sinav Stratejisi:**
-- Once kolay sorulari cozun
-- Zor sorulara sonra donun
-- Her soruya esit sure ayirmayin
-
-**Not:** Bu ornek detayli icerik olup, gercek AI entegrasyonunda cok daha kapsamli anlatim yapilacaktir.`;
+  try {
+    const subjectName = state.selectedSubject?.name || '';
+    const data = await callWorkerAPI('/api/konu-anlatim', { subjectName, topicName, detailed: true });
+    hideLoading();
+    return data.explanation;
+  } catch(e) {
+    hideLoading();
+    showToast('Detayli anlatim alinamadi: ' + e.message, 'error');
+    throw e;
+  }
 }
 
 async function getMockQuestions(topicId, topicName, count = 10) {
-  await mockAiDelay();
-
-  const questionBank = {
-    'tyt_mat_3': [
-      { text:'EBOB(48, 72) kactir?', options:['12','24','36','8','16'], correctIndex:1 },
-      { text:'EKOK(15, 20) kactir?', options:['30','45','60','120','300'], correctIndex:2 },
-      { text:'EBOB(a,b) x EKOK(a,b) = ? formulunde a=12, b=18 icin EKOK kactir?', options:['6','12','18','36','72'], correctIndex:3 },
-      { text:'Uc sayinin EBOB\'u 6 ise bu sayilardan biri asagidakilerden hangisi olamaz?', options:['12','18','24','36','20'], correctIndex:4 },
-      { text:'EKOK(8, 12, 16) kactir?', options:['24','48','96','192','32'], correctIndex:1 },
-      { text:'36 ve 48 sayilarinin EBOB\'u kactir?', options:['6','8','12','16','24'], correctIndex:2 },
-      { text:'Iki sayinin EBOB\'u 5, EKOK\'u 60 ise carpimi kactir?', options:['100','200','300','400','500'], correctIndex:2 },
-      { text:'EBOB(24, 36, 60) kactir?', options:['4','6','8','12','24'], correctIndex:3 },
-      { text:'EKOK(6, 8) + EBOB(6, 8) = ?', options:['24','26','28','30','32'], correctIndex:1 },
-      { text:'Bir sayinin 12 ve 18 ile tam bolunebilmesi icin en kucuk deger ne olmalidir?', options:['24','30','36','48','72'], correctIndex:2 }
-    ],
-    'tyt_mat_1': [
-      { text:'3 basamakli en buyuk cift sayi kactir?', options:['998','996','990','988','994'], correctIndex:0 },
-      { text:'4526 sayisindaki 5\'in basamak degeri kactir?', options:['5','50','500','5000','55'], correctIndex:2 },
-      { text:'Birler basamagi 7, onlar basamagi 3 olan en kucuk uc basamakli sayi kactir?', options:['137','237','337','037','173'], correctIndex:0 },
-      { text:'2 basamakli en buyuk asal sayi kactir?', options:['89','97','91','93','99'], correctIndex:1 },
-      { text:'0 ile 100 arasinda kac tane cift sayi vardir?', options:['49','50','51','48','52'], correctIndex:1 },
-      { text:'456 sayisindaki rakamlarin toplami kactir?', options:['12','13','14','15','16'], correctIndex:3 },
-      { text:'En kucuk dort basamakli sayi kactir?', options:['1000','1001','999','0001','1010'], correctIndex:0 },
-      { text:'Ard isik 3 tek sayinin toplami 27 ise en buyukleri kactir?', options:['7','9','11','13','15'], correctIndex:2 },
-      { text:'5! (5 faktoriyel) kactir?', options:['60','100','120','150','200'], correctIndex:2 },
-      { text:'12 sayisinin pozitif bolenleri toplami kactir?', options:['24','28','32','36','40'], correctIndex:1 }
-    ]
-  };
-
-  let questions = questionBank[topicId];
-  if (!questions || questions.length < count) {
-    questions = generateGenericQuestions(topicName, count);
-  } else {
-    questions = shuffleArray([...questions]).slice(0, count);
+  showLoading('Sorular hazirlaniyor...');
+  try {
+    const subjectName = state.sorularSubject?.name || '';
+    const data = await callWorkerAPI('/api/soru-uret', { subjectName, topicName, count });
+    hideLoading();
+    return data.questions.map((q, i) => ({ ...q, id: `q_${topicId}_${i}` }));
+  } catch(e) {
+    hideLoading();
+    showToast('Soru uretimi basarisiz: ' + e.message, 'error');
+    throw e;
   }
-
-  return questions.map((q, i) => ({ ...q, id: `q_${topicId}_${i}` }));
-}
-
-function generateGenericQuestions(topicName, count) {
-  const questions = [];
-  for (let i = 0; i < count; i++) {
-    questions.push({
-      text: `${topicName} ile ilgili ornek soru ${i + 1}: Asagidakilerden hangisi dogrudur?`,
-      options: [
-        `${topicName} ile ilgili A secenegi`,
-        `${topicName} ile ilgili B secenegi`,
-        `${topicName} ile ilgili C secenegi (Dogru)`,
-        `${topicName} ile ilgili D secenegi`,
-        `${topicName} ile ilgili E secenegi`
-      ],
-      correctIndex: 2
-    });
-  }
-  return questions;
 }
 
 function shuffleArray(arr) {
@@ -2666,22 +2547,19 @@ function shuffleArray(arr) {
   return arr;
 }
 
-async function getMockAiSolution(questionText) {
+async function getMockAiSolution(questionText, imageUrl) {
   showLoading('Cozum hazirlaniyor...');
-  await mockAiDelay(1500, 3000);
-  hideLoading();
-
-  return {
-    steps: [
-      { title: 'Adim 1: Soruyu Anlama', content: 'Once soruyu dikkatle okuyalim ve ne istendigini belirleyelim.' },
-      { title: 'Adim 2: Verilenleri Belirleme', content: 'Soruda verilen bilgileri listeleyelim ve bilinmeyenleri tanimlayalim.' },
-      { title: 'Adim 3: Cozum Yontemi', content: 'Bu tur sorularda uygulanacak en uygun yontemi belirleyelim.' },
-      { title: 'Adim 4: Islem Adimlari', content: 'Belirledigimiz yontemi adim adim uygulayalim. Her asamada islemleri dikkatle yapalim.' },
-      { title: 'Adim 5: Sonuc', content: 'Islemlerin sonucunda cevabi elde ettik.' }
-    ],
-    finalAnswer: 'Bu bir ornek cozumdur. Gercek AI entegrasyonunda sorunuza ozel detayli ve adim adim cozum sunulacaktir.',
-    note: 'Bu bir mock cozumdur. Kontrol edilmesi onerilir.'
-  };
+  try {
+    const body = { questionText };
+    if (imageUrl) body.imageUrl = imageUrl;
+    const data = await callWorkerAPI('/api/soru-coz', body);
+    hideLoading();
+    return data.solution;
+  } catch(e) {
+    hideLoading();
+    showToast('Cozum alinamadi: ' + e.message, 'error');
+    throw e;
+  }
 }
 
 // ==========================================
